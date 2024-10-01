@@ -9,9 +9,9 @@ File::File() {
 	m_pFile = nullptr;
 }
 
-bool File::Open(const char* path) {
+bool File::Open(const char* path, const char* openMode) {
 	m_path = path;
-	m_pFile = fopen(path, "rb+");
+	fopen_s(&m_pFile, path, openMode);
 	if (m_pFile == nullptr) {
 		return false;
 	}
@@ -26,15 +26,21 @@ long int File::GetSize() {
 }
 
 void File::Read(byte* buffer) {
-	fseek(m_pFile, 0, SEEK_SET);
-	fread(buffer, sizeof(char), m_size, m_pFile);
+	if (m_pFile != nullptr) {
+		fseek(m_pFile, 0, SEEK_SET);
+		fread(buffer, sizeof(char), m_size, m_pFile);
+	}
 }
 
 void File::Write(byte* buffer) {
-	fwrite(buffer, sizeof(char), m_size, m_pFile);
+	if (m_pFile != nullptr) {
+		fwrite(buffer, sizeof(char), m_size, m_pFile);
+	}
 }
 
 void File::Close() {
-	fclose(m_pFile);
-	m_pFile = nullptr;
+	if (m_pFile != nullptr) {
+		fclose(m_pFile);
+		m_pFile = nullptr;
+	}
 }

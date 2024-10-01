@@ -5,9 +5,18 @@ class Bitmap {
 	byte* m_colorBits;
 
 public:
+	
 	Bitmap();
 
 	bool Init(const char* path);
+
+	BITMAPINFOHEADER GetMapInfo();
+
+	HBITMAP GenerateHBitMap(HDC hdc);
+
+	byte* GetBuffer();
+
+	void setTextHeader(SHORT lengthOfText);
 
 	~Bitmap() {};
 };

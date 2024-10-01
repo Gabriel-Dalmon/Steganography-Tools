@@ -1,4 +1,5 @@
-
+#include "pch.h"
+#include <stdio.h>
 class File {
 	const char* m_path;
 	long int m_size;
@@ -6,7 +7,7 @@ class File {
 public:
 	File();
 
-	bool Open(const char* path);
+	bool Open(const char* path, const char* openMode);
 
 	long int GetSize();
 

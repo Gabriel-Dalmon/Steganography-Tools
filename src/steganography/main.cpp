@@ -2,7 +2,25 @@
 #define UNICODE
 #endif 
 
-#include <pch.h>
+#include "pch.h"
+#include "Bitmap.h"
+#include "File.h"
+
+void OnPaint(HDC hdc) {
+    
+    Bitmap bitMP;
+    bitMP.Init("imgBMPTest.bmp");
+    HBITMAP bmpTest = bitMP.GenerateHBitMap(hdc);
+    HDC newhdc = CreateCompatibleDC(hdc);
+    SelectObject(newhdc, bmpTest);
+    BITMAPINFOHEADER bih = bitMP.GetMapInfo();
+    BitBlt(hdc, 10, 10, bih.biWidth, bih.biHeight, newhdc, 0, 0, SRCCOPY);
+
+    File testFile;
+    testFile.Open("copy.bmp", "wb+");
+    testFile.Write(bitMP.GetBuffer());
+    testFile.Close();
+}
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -67,7 +85,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
-
+        OnPaint(hdc);
         // All painting occurs here, between BeginPaint and EndPaint.
 
         FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
