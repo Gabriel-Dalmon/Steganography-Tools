@@ -8,8 +8,9 @@ TextInput::~TextInput()
 {
 }
 
-int TextInput::Init(const Window* parentWindow, TextInputDescriptor* textInputDescriptor)
+int TextInput::Init(const Window* parentWindow, TextInputDescriptor* textInputDescriptor, void(*onChangeCallback)())
 {
+	m_onChangeCallback = onChangeCallback;
 	const HWND& parentHWnd = parentWindow->GetWindowHandle();
 	const HINSTANCE& parentHInstance = parentWindow->GetHInstance();
 	m_hWnd = CreateWindow(

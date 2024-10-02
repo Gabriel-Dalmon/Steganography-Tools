@@ -18,6 +18,8 @@ public:
 
 	byte* GetBuffer();
 
+	inline BYTE* GetPixelsBuffer() const { return m_colorBits; };
+
 	void setTextHeader(unsigned int lengthOfText);
 
 	~Bitmap() {};

@@ -14,8 +14,8 @@ public:
 	~Button();
 	int Init(const Window* parentWindow, ButtonDescriptor* buttonDescriptor, void (*callback)());
 
-	inline void Execute() const { if (m_callback)m_callback(); };
+	inline void Execute() const { if (m_onClickCallback)m_onClickCallback(); };
 
 private:
-	void (*m_callback)() = nullptr;
+	void (*m_onClickCallback)() = nullptr;
 };
