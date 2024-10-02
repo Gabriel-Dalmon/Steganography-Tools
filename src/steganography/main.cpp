@@ -5,6 +5,7 @@
 #include "pch.h"
 #include "Bitmap.h"
 #include "File.h"
+#include <iostream>
 void OnPaint(HDC hdc) {
     
     Bitmap bitMP;
@@ -30,6 +31,45 @@ void EncryptButtonCallback()
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
+	AllocConsole();
+	FILE* consoleOut;
+	freopen_s(&consoleOut, "CONOUT$", "w", stdout);
+
+	Bitmap bitMP;
+	bitMP.Init("imgBMPTest.bmp");
+	bitMP.SetSignEncrypted();
+	bitMP.setTextHeader(10);
+	bitMP.EncryptText("CECI EST A");
+	File testFile;
+	testFile.Open("copy.bmp", "wb+");
+	testFile.Write(bitMP.GetBuffer(), bitMP.GetFileInfo().bfSize);
+	testFile.Close();
+
+	Bitmap bitMP2;
+	bitMP2.Init("copy.bmp");
+
+	std::cout << bitMP2.CheckSignEncrypted() << std::endl;
+
+	int length = bitMP2.ReadTextHeader();
+
+	std::cout << bitMP2.ReadTextHeader() << std::endl;
+
+	std::cout << bitMP2.ReadEncryptedText(length) << std::endl;
+
+	/*
+	bitMP.uninit();
+	bitMP.Init("imgBMPTest.bmp");
+
+	std::cout << bitMP.CheckSignEncrypted() << std::endl;
+
+	int length2 = bitMP.ReadTextHeader();
+
+	std::cout << bitMP.ReadTextHeader() << std::endl;
+
+	std::cout << bitMP.ReadEncryptedText(length) << std::endl;
+	
+	*/
+
 	WindowClassDescriptor windowClassDescriptor;
 	WindowDescriptor windowDescriptor = { L"Window", 800, 600 };
 	Window window;
