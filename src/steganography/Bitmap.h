@@ -1,4 +1,4 @@
-#define ENCRYPTSIGN 19319
+#define ENCRYPTSIGN 300
 
 class Bitmap {
 	byte* m_buffer;

@@ -85,9 +85,10 @@ unsigned int Bitmap::ReadBytes(byte size, byte* place) {
 		unsigned int tempStorage = 0b00;
 		int offset = 0;
 		if (j == 2) {
+			offset++;
 			getBits = ReadBits(2, place);
 			tempStorage = (unsigned int)getBits << i + offset;
-			offset++;
+			
 			j = 0;
 			
 		}
@@ -114,11 +115,12 @@ void Bitmap::setTextHeader(unsigned int lengthOfText) {
 }
 
 void Bitmap::EncryptText(const char* text) {
-	int size = 10;
+	int size = 32603;
 	setTextHeader(size);
 	byte* place = m_colorBits + 24;
-	for (int i = 0; i < size; i++) {
-		SetBytes((unsigned int)text[i], 1, place);
+	//for (int i = 0; i < size; i++) {
+	for (int i = 0; i < 10; i++) {
+		SetBytes((unsigned int)text[i], 2, place);
 		place += 6;
 	}
 }
@@ -139,12 +141,15 @@ unsigned int Bitmap::ReadTextHeader() {
 }
 
 const char* Bitmap::ReadEncryptedText(int textLength) {
-	char* returnArray = new char[textLength+1];
+	//char* returnArray = new char[textLength+1];
+	char* returnArray = new char[11];
 	byte* place = m_colorBits + 24;
-	for (int i = 0; i < textLength; i++) {
+	//for (int i = 0; i < textLength; i++) {
+	for (int i = 0; i < 10; i++) {
 		returnArray[i] = (char)ReadBytes(1, place);
 		place += 6;
 	}
-	returnArray[textLength] = '\0';
+	//returnArray[textLength] = '\0';
+	returnArray[10] = '\0';
 	return returnArray;
 }

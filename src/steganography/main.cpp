@@ -38,8 +38,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	Bitmap bitMP;
 	bitMP.Init("imgBMPTest.bmp");
 	bitMP.SetSignEncrypted();
-	bitMP.setTextHeader(10);
 	bitMP.EncryptText("CECI EST A");
+	std::cout << bitMP.ReadTextHeader() << std::endl;
 	File testFile;
 	testFile.Open("copy.bmp", "wb+");
 	testFile.Write(bitMP.GetBuffer(), bitMP.GetFileInfo().bfSize);
@@ -55,6 +55,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	std::cout << bitMP2.ReadTextHeader() << std::endl;
 
 	std::cout << bitMP2.ReadEncryptedText(length) << std::endl;
+
+	
 
 	/*
 	bitMP.uninit();
