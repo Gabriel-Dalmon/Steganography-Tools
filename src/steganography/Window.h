@@ -13,12 +13,13 @@ struct WindowDescriptor {
 	int	height = 600;
 };
 
-template <typename WindowType>
+template<typename WindowType>
 class AbstractWindow {
 public:
 	void SetInstance() {
 		SetWindowLongPtr(m_hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 	};
+	
 	static WindowType* GetInstance(HWND hWnd) {
 		return reinterpret_cast<WindowType*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 	};
@@ -46,9 +47,9 @@ public:
 	inline int GetWindowHeight() const { return m_windowHeight; };
 
 	// Subwindow Factories
-	std::weak_ptr<Button> CreateButton(ButtonDescriptor* buttonDescriptor, void(*callback)());
-	std::weak_ptr<TextInput> CreateTextInput(TextInputDescriptor* buttonDescriptor);
-	bool CreateResource() const;
+	std::weak_ptr<Button> CreateButton(ButtonDescriptor* buttonDescriptor, void(*onClickedCallback)());
+	std::weak_ptr<TextInput> CreateTextInput(TextInputDescriptor* buttonDescriptor, void(*onChangeCallback)() = nullptr);
+	std::weak_ptr<Image> CreateImage(Bitmap* bitmap, ImageDescriptor* imageDescriptor);
 
 
 private:
@@ -56,6 +57,7 @@ private:
 	static LRESULT __stdcall WindowProcess(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	void OnButtonClicked(HWND buttonHWnd);
+	void OnEditControlChanged(HWND controlHWnd);
 
 private:
 	HINSTANCE m_hInstance = nullptr;
@@ -65,4 +67,5 @@ private:
 
 	std::unordered_set<std::shared_ptr<Button>> m_buttons = {};
 	std::unordered_set<std::shared_ptr<TextInput>> m_textInputs = {};
+	std::unordered_set<std::shared_ptr<GraphicResource>> m_graphicResources = {};
 };

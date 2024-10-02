@@ -8,10 +8,10 @@ Button::~Button()
 {
 }
 
-int Button::Init(const Window* parentWindow, ButtonDescriptor* buttonDescriptor, void (*callback)()) {
+int Button::Init(const Window* parentWindow, ButtonDescriptor* buttonDescriptor, void (*onClickCallback)()) {
 	const HWND& parentHWnd = parentWindow->GetWindowHandle();
 	const HINSTANCE& parentHInstance = parentWindow->GetHInstance();
-	m_callback = callback;
+	m_onClickCallback = onClickCallback;
 	m_hWnd = CreateWindow(
 		L"BUTTON",
 		buttonDescriptor->text,
@@ -33,8 +33,3 @@ int Button::Init(const Window* parentWindow, ButtonDescriptor* buttonDescriptor,
 	SetInstance();
 	return 0;
 }
-
-/*inline Button* Button::GetButtonInstance(HWND hwnd)
-{
-	return reinterpret_cast<Button*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-}*/

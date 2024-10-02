@@ -34,6 +34,8 @@ public:
 
 	void SetSignEncrypted();
 
+	inline BYTE* GetPixelsBuffer() const { return m_colorBits; };
+
 	void setTextHeader(unsigned int lengthOfText);
 
 	bool EncryptText(const char* text);

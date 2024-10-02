@@ -1,7 +1,4 @@
 #include "pch.h"
-#include "File.h"
-#include <stdio.h>
-
 
 File::File() {
 	m_size = 0;

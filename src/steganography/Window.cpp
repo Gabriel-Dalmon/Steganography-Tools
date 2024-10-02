@@ -83,20 +83,28 @@ void Window::Release()
     DestroyWindow(m_hWnd);
 }
 
-std::weak_ptr<Button> Window::CreateButton(ButtonDescriptor* buttonDescriptor, void(*callback)())
+std::weak_ptr<Button> Window::CreateButton(ButtonDescriptor* buttonDescriptor, void(*onClickedCallback)())
 {
     std::shared_ptr<Button> button = std::make_shared<Button>();
-    button->Init(this, buttonDescriptor, callback);
+    button->Init(this, buttonDescriptor, onClickedCallback);
     m_buttons.insert(button);
     return std::weak_ptr<Button>(button);
 }
 
-std::weak_ptr<TextInput> Window::CreateTextInput(TextInputDescriptor* textInputDescriptor)
+std::weak_ptr<TextInput> Window::CreateTextInput(TextInputDescriptor* textInputDescriptor, void(*onChangeCallback)())
 {
     std::shared_ptr<TextInput> textInput = std::make_shared<TextInput>();
-    textInput->Init(this, textInputDescriptor);
+    textInput->Init(this, textInputDescriptor, onChangeCallback);
     m_textInputs.insert(textInput);
     return std::weak_ptr<TextInput>(textInput);
+}
+
+std::weak_ptr<Image> Window::CreateImage(Bitmap* bitmap, ImageDescriptor* imageDescriptor)
+{
+    std::shared_ptr<Image> image = std::make_shared<Image>();
+    image->Init(bitmap, imageDescriptor, GetDC(m_hWnd));
+    m_graphicResources.insert(image);
+    return std::weak_ptr<Image>(image);
 }
 
 LRESULT CALLBACK Window::WindowProcess(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -106,18 +114,33 @@ LRESULT CALLBACK Window::WindowProcess(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
     {
     case WM_COMMAND:
     {
-        if (wParam == BN_CLICKED) {
-            const HWND& buttonHWnd = reinterpret_cast<HWND>(lParam);
-            if (!buttonHWnd) break;
-            window->OnButtonClicked(buttonHWnd);
+        const HWND& controlHWnd = reinterpret_cast<HWND>(lParam);
+        if (!controlHWnd) break;
+        switch(wParam) {
+        case EN_CHANGE:            
+            window->OnEditControlChanged(controlHWnd);
+            break;
+        case BN_CLICKED:
+            window->OnButtonClicked(controlHWnd);
+            break;
         }
+        break;
     }
     break;
     case WM_PAINT:
     {
+        OutputDebugString(L"WMPAIN called\n");
+        if (window->m_graphicResources.size() == 0) {
+            break;
+        }
+        OutputDebugString(L"Has Graphic Resources\n");
         PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(hWnd, &ps);
-        // TODO: GetDC and Add bitmaps drawing here
+        HDC compatibleDevice = BeginPaint(hWnd, &ps);
+        HDC sourceCompatibleDevice = CreateCompatibleDC(compatibleDevice);
+        for (const auto& graphicResource : window->m_graphicResources) {
+            graphicResource->Draw(compatibleDevice, sourceCompatibleDevice);
+        }
+        DeleteDC(sourceCompatibleDevice);
         EndPaint(hWnd, &ps);
     }
     break;
@@ -134,4 +157,10 @@ void Window::OnButtonClicked(HWND buttonHWnd)
 {
     const Button& button = *Button::GetInstance(buttonHWnd);
     button.Execute();
+}
+
+void Window::OnEditControlChanged(HWND controlHWnd)
+{
+    const TextInput& textInput = *TextInput::GetInstance(controlHWnd);
+    textInput.OnChange();
 }

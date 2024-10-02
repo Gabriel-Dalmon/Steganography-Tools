@@ -3,80 +3,59 @@
 #endif 
 
 #include "pch.h"
-#include "Bitmap.h"
-#include "File.h"
-#include <iostream>
-void OnPaint(HDC hdc) {
-    
-    Bitmap bitMP;
-    bitMP.Init("imgBMPTest.bmp");
 
-    HBITMAP bmpTest = bitMP.GenerateHBitMap(hdc);
-    HDC newhdc = CreateCompatibleDC(hdc);
 
-    SelectObject(newhdc, bmpTest);
-    BITMAPINFOHEADER bih = bitMP.GetMapInfo();
-    BitBlt(hdc, 10, 10, bih.biWidth, bih.biHeight, newhdc, 0, 0, SRCCOPY);
 
-    File testFile;
-    testFile.Open("copy.bmp", "wb+");
-    testFile.Write(bitMP.GetBuffer(), bitMP.GetFileInfo().bfSize);
-    testFile.Close();
-}
 
 void EncryptButtonCallback()
 {
 	MessageBox(0, L"Encrypt button clicked", 0, 0);
 }
 
+void TextInputCallback()
+{
+	MessageBox(0, L"TextInput changed", 0, 0);
+}
+
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
-	/*AllocConsole();
-	FILE* consoleOut;
-	freopen_s(&consoleOut, "CONOUT$", "w", stdout);
-
-	Bitmap bitMP;
-	bitMP.Init("imgBMPTest.bmp");
-	if (bitMP.CheckSignEncrypted()) {
-		int length2 = bitMP.ReadTextHeader();
-		std::cout << bitMP.ReadEncryptedText(length2) << std::endl;
-	}
-	else {
-		std::cout << "No encrypted text" << std::endl;
-	}
-	bitMP.EncryptText("TEST");
-	File testFile;
-	testFile.Open("copy.bmp", "wb+");
-	testFile.Write(bitMP.GetBuffer(), bitMP.GetFileInfo().bfSize);
-	testFile.Close();
-
-	Bitmap bitMP2;
-	bitMP2.Init("C:/Users/mzins/Downloads/copy.bmp");
-
-
-	std::cout << bitMP2.CheckSignEncrypted() << std::endl;
-	if (bitMP2.CheckSignEncrypted()) {
-		int length = bitMP2.ReadTextHeader();
-		std::cout << bitMP2.ReadEncryptedText(length) << std::endl;
-	}
-	else {
-		std::cout << "No encrypted text" << std::endl;
-	}*/
-
+	OutputDebugString(L"Output Debug String Entered Main\n");
 	WindowClassDescriptor windowClassDescriptor;
-	WindowDescriptor windowDescriptor = { L"Window", 800, 600 };
+	WindowDescriptor windowDescriptor = { L"Window", 1200, 800 };
 	Window window;
 	window.Init(hInstance, &windowClassDescriptor);
 	window.Create(&windowDescriptor);
 
-	ButtonDescriptor encryptButtonDescriptor = { L"Encrypt", 100, 100, 200, 50 };
+	int windowWidth = window.GetWindowWidth();
+	int windowHeight = window.GetWindowHeight();
+	int windowCenterX = windowWidth / 2;
+	int windowCenterY = windowHeight / 2;
+	int buttonWidth = 200;
+	int buttonHeight = 50;
+	int paddingBottom = windowHeight / 4;
+	int buttonY = windowHeight - buttonHeight - paddingBottom;
+	int imageWidth = 400;
+	int imageHeight = 400;
+	int imageY = buttonY - imageHeight - 50;
+	int centerPaddingHalf = 50;
+
+	ButtonDescriptor encryptButtonDescriptor = { L"Encrypt", windowCenterX - (buttonWidth + centerPaddingHalf), buttonY, buttonWidth, buttonHeight};
 	window.CreateButton(&encryptButtonDescriptor, &EncryptButtonCallback);
 
-	ButtonDescriptor decryptButtonDescriptor = { L"Decrypt", 350, 100, 200, 50 };
+	ButtonDescriptor decryptButtonDescriptor = { L"Decrypt", windowCenterX + centerPaddingHalf, buttonY, buttonWidth, buttonHeight };
 	window.CreateButton(&decryptButtonDescriptor, nullptr);
 
 	TextInputDescriptor textInputDescriptor = { L"Enter the file path here", 10, 10, 300, 25 };
-	window.CreateTextInput(&textInputDescriptor);
+	window.CreateTextInput(&textInputDescriptor, &TextInputCallback);
+	Bitmap bitmap;
+	bitmap.Init("./bigImageTest.bmp");
+	ImageDescriptor imageDescriptor = { windowCenterX - (imageWidth + centerPaddingHalf), imageY, imageWidth, imageHeight };
+	window.CreateImage(&bitmap, &imageDescriptor);
+
+	Bitmap bitmap2;
+	bitmap2.Init("./imgBMPTest.bmp");
+	ImageDescriptor imageDescriptor2 = { windowCenterX + centerPaddingHalf, imageY, imageWidth, imageHeight };
+	window.CreateImage(&bitmap2, &imageDescriptor2);
 
 	window.Run();
 	return 0;

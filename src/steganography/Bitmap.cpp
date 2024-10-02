@@ -1,6 +1,5 @@
 #include "pch.h"
-#include "Bitmap.h"
-#include "File.h"
+
 
 Bitmap::Bitmap() {
 	m_buffer = nullptr;
