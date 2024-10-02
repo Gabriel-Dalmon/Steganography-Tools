@@ -11,13 +11,13 @@ Bitmap::Bitmap() {
 
 bool Bitmap::Init(const char* path) {
 	File file;
-	file.Open(path, "rb+");
+	file.Open(path, "rb");
 	long int size = file.GetSize();
 	m_buffer = new byte[size];
 	
 	file.Read(m_buffer);
 	memcpy(&m_bfh, m_buffer, sizeof(BITMAPFILEHEADER));
-	memcpy(&m_bih, m_buffer+ sizeof(BITMAPFILEHEADER), sizeof(BITMAPINFOHEADER));
+	memcpy(&m_bih, m_buffer+ sizeof(BITMAPFILEHEADER), sizeof(BITMAPINFOHEADER));	
 	m_colorBits = m_buffer + m_bfh.bfOffBits;
 
 	return true;
@@ -30,6 +30,9 @@ HBITMAP Bitmap::GenerateHBitMap(HDC hdc) {
 
 BITMAPINFOHEADER Bitmap::GetMapInfo() {
 	return m_bih;
+}
+BITMAPFILEHEADER Bitmap::GetFileInfo() {
+	return m_bfh;
 }
 
 byte* Bitmap::GetBuffer() {

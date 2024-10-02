@@ -32,7 +32,8 @@ void File::Read(byte* buffer) {
 	}
 }
 
-void File::Write(byte* buffer) {
+void File::Write(byte* buffer, int size) {
+	m_size = size;
 	if (m_pFile != nullptr) {
 		fwrite(buffer, sizeof(char), m_size, m_pFile);
 	}

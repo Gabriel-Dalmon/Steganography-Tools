@@ -12,11 +12,13 @@ public:
 
 	BITMAPINFOHEADER GetMapInfo();
 
+	BITMAPFILEHEADER GetFileInfo();
+
 	HBITMAP GenerateHBitMap(HDC hdc);
 
 	byte* GetBuffer();
 
-	void setTextHeader(SHORT lengthOfText);
+	void setTextHeader(unsigned int lengthOfText);
 
 	~Bitmap() {};
 };

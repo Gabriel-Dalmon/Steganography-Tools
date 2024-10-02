@@ -13,7 +13,7 @@ public:
 
 	void Read(byte* buffer);
 
-	void Write(byte* buffer);
+	void Write(byte* buffer, int size);
 
 	void Close();
 
