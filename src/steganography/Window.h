@@ -1,44 +1,68 @@
 #pragma once
 
-struct WindowDescriptor {
-	int windowWidth = 800;
-	int	windowHeight = 600;
-	LPCWSTR hAppTitle = L"Windows app";
-	HICON hAppIcon = nullptr;
-	HICON hAppIconSmall = nullptr;
-	HCURSOR hAppCursor = nullptr;
-	LPCWSTR hAppClassName = L"WindowsApp";
+struct WindowClassDescriptor {
+	HICON hWindowIcon = nullptr;
+	HICON hWindowIconSmall = nullptr;
+	HCURSOR hWindowCursor = nullptr;
+	LPCWSTR className = L"WindowsAppClassName";
 };
 
-class Window
+struct WindowDescriptor {
+	LPCWSTR title = L"Windows App Title";
+	int width = 800;
+	int	height = 600;
+};
+
+template <typename WindowType>
+class AbstractWindow {
+public:
+	void SetInstance() {
+		SetWindowLongPtr(m_hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+	};
+	static WindowType* GetInstance(HWND hWnd) {
+		return reinterpret_cast<WindowType*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+	};
+
+protected:
+	HWND m_hWnd = nullptr;
+};
+
+class Window : public AbstractWindow<Window>
 {
 public:
 	Window();
 	~Window();
 
 	//
-	int Initialize(HINSTANCE hInstance, WindowDescriptor* windowDescriptor);
-	ATOM RegisterWindowClass(WindowDescriptor* windowDescriptor);
+	int Init(HINSTANCE hInstance, WindowClassDescriptor* windowClassDescriptor);
+	int Create(WindowDescriptor* windowDescriptor);
+	void Run();
 	void Release();
 
 	// Getters/Setters
 	inline HWND GetWindowHandle() const { return m_hWnd; };
+	inline HINSTANCE GetHInstance() const { return m_hInstance; };
 	inline int GetWindowWidth() const { return m_windowWidth; };
 	inline int GetWindowHeight() const { return m_windowHeight; };
 
-	// Subwindows Factory
-	bool CreateButton() const;
-	bool CreateTextInput() const;
-	bool CreateImage() const;
+	// Subwindow Factories
+	std::weak_ptr<Button> CreateButton(ButtonDescriptor* buttonDescriptor, void(*callback)());
+	std::weak_ptr<TextInput> CreateTextInput(TextInputDescriptor* buttonDescriptor);
+	bool CreateResource() const;
 
 
 private:
-	void OnButtonClicked(WPARAM wParam, LPARAM lParam);
+	ATOM RegisterWindowClass(WindowClassDescriptor* windowClassDescriptor);
 	static LRESULT __stdcall WindowProcess(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+	void OnButtonClicked(HWND buttonHWnd);
+
 private:
-	HWND m_hWnd = nullptr;
-	HINSTANCE m_hAppInstance = nullptr;
+	HINSTANCE m_hInstance = nullptr;
+	LPCWSTR m_windowClassName = nullptr;
 	int m_windowWidth = 0;
 	int m_windowHeight = 0;
+
+	std::unordered_set<std::shared_ptr<Button>> m_buttons = {};
+	std::unordered_set<std::shared_ptr<TextInput>> m_textInputs = {};
 };

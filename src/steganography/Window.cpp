@@ -8,16 +8,21 @@ Window::~Window()
 {
 }
 
-int Window::Initialize(HINSTANCE hAppInstance, WindowDescriptor* windowDescriptor)
+int Window::Init(HINSTANCE hInstance, WindowClassDescriptor* windowClassDescriptor)
 {
-    m_hAppInstance = hAppInstance;
-    m_windowWidth = windowDescriptor->windowWidth;
-    m_windowHeight = windowDescriptor->windowHeight;
-    RegisterWindowClass(windowDescriptor);
+    m_hInstance = hInstance;
+    m_windowClassName = windowClassDescriptor->className;
+    RegisterWindowClass(windowClassDescriptor);
+    return 0;
+}
 
+int Window::Create(WindowDescriptor* windowDescriptor)
+{
+    m_windowWidth = windowDescriptor->width;
+    m_windowHeight = windowDescriptor->height;
     m_hWnd = CreateWindow(
-        windowDescriptor->hAppClassName,
-        windowDescriptor->hAppTitle,
+        m_windowClassName,
+        windowDescriptor->title,
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
@@ -25,7 +30,7 @@ int Window::Initialize(HINSTANCE hAppInstance, WindowDescriptor* windowDescripto
         m_windowHeight,
         0,
         0,
-        m_hAppInstance,
+        m_hInstance,
         0
     );
 
@@ -35,12 +40,24 @@ int Window::Initialize(HINSTANCE hAppInstance, WindowDescriptor* windowDescripto
         return -1;
     }
 
+    // Store the Window instance in the window handle user data.
+    SetInstance();
     ShowWindow(m_hWnd, SW_SHOW);
-    UpdateWindow(m_hWnd);
     return 0;
 }
 
-ATOM Window::RegisterWindowClass(WindowDescriptor* windowDescriptor)
+void Window::Run()
+{
+    MSG msg = { 0 };
+	while (GetMessage(&msg, nullptr, 0, 0))
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+}
+
+ATOM Window::RegisterWindowClass(WindowClassDescriptor* windowClassDescriptor)
 {
     WNDCLASSEXW wcex;
     wcex.cbSize = sizeof(WNDCLASSEX);
@@ -49,13 +66,13 @@ ATOM Window::RegisterWindowClass(WindowDescriptor* windowDescriptor)
     wcex.lpfnWndProc = WindowProcess;
     wcex.cbClsExtra = 0;
     wcex.cbWndExtra = 0;
-    wcex.hInstance = m_hAppInstance;
-    //wcex.hIcon = windowDescriptor->hAppIcon == nullptr ? LoadIcon(m_hAppInstance, MAKEINTRESOURCE(IDI_SLEEPYENGINE)) : windowDescriptor->hAppIcon;
-    wcex.hCursor = windowDescriptor->hAppCursor == nullptr ? LoadCursor(nullptr, IDC_ARROW) : windowDescriptor->hAppCursor;
+    wcex.hInstance = m_hInstance;
+    wcex.hIcon = windowClassDescriptor->hWindowIcon;
+    wcex.hCursor = windowClassDescriptor->hWindowCursor;
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    //wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_SLEEPYENGINE);
-    wcex.lpszClassName = windowDescriptor->hAppClassName;
-    //wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+    wcex.lpszMenuName = NULL;
+    wcex.lpszClassName = windowClassDescriptor->className;
+    wcex.hIconSm = NULL;
 
     return RegisterClassExW(&wcex);
 }
@@ -66,17 +83,33 @@ void Window::Release()
     DestroyWindow(m_hWnd);
 }
 
+std::weak_ptr<Button> Window::CreateButton(ButtonDescriptor* buttonDescriptor, void(*callback)())
+{
+    std::shared_ptr<Button> button = std::make_shared<Button>();
+    button->Init(this, buttonDescriptor, callback);
+    m_buttons.insert(button);
+    return std::weak_ptr<Button>(button);
+}
+
+std::weak_ptr<TextInput> Window::CreateTextInput(TextInputDescriptor* textInputDescriptor)
+{
+    std::shared_ptr<TextInput> textInput = std::make_shared<TextInput>();
+    textInput->Init(this, textInputDescriptor);
+    m_textInputs.insert(textInput);
+    return std::weak_ptr<TextInput>(textInput);
+}
+
 LRESULT CALLBACK Window::WindowProcess(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    Window* window = Window::GetInstance(hWnd);
     switch (uMsg)
     {
     case WM_COMMAND:
     {
         if (wParam == BN_CLICKED) {
-            //OnButtonClicked(wParam, lParam);
-            /*const HWND buttonHWnd = (HWND)lParam;
-            const Button& button = GetWindowLongPtr(buttonHWnd, GWLP_USERDATA);
-            button.execute();*/
+            const HWND& buttonHWnd = reinterpret_cast<HWND>(lParam);
+            if (!buttonHWnd) break;
+            window->OnButtonClicked(buttonHWnd);
         }
     }
     break;
@@ -95,4 +128,10 @@ LRESULT CALLBACK Window::WindowProcess(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
         return DefWindowProc(hWnd, uMsg, wParam, lParam);
     }
     return 0;
+}
+
+void Window::OnButtonClicked(HWND buttonHWnd)
+{
+    const Button& button = *Button::GetInstance(buttonHWnd);
+    button.Execute();
 }
