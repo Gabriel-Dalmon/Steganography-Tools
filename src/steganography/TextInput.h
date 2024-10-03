@@ -14,13 +14,13 @@ public:
 	TextInput();
 	~TextInput();
 
-	int Init(const Window* parentWindow, TextInputDescriptor* textInputDescriptor, void(*onChangeCallback)());
+	int Init(const Window* parentWindow, TextInputDescriptor* textInputDescriptor, void(*onChangeCallback)(TextInput* textInput), int windowId = MAIN_WINDOW_ID);
 	wchar_t* GetText() const;
-	inline void OnChange() const { if (m_onChangeCallback)m_onChangeCallback(); };
+	inline void OnChange() { if (m_onChangeCallback)m_onChangeCallback(this); };
 
 
 private:
-	void(*m_onChangeCallback)() = nullptr;
+	void(*m_onChangeCallback)(TextInput* textInput) = nullptr;
 };
 
 /* // Compiles but feels weird FileInput inherits from both AbstractWindow<FileInput>

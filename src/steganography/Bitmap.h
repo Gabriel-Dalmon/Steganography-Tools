@@ -13,6 +13,7 @@ public:
 	Bitmap();
 
 	bool Init(const char* path);
+	bool Init(const wchar_t* path);
 
 	BITMAPINFOHEADER GetMapInfo();
 

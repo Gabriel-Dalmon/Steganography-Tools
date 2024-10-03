@@ -19,6 +19,18 @@ bool File::Open(const char* path, const char* openMode) {
 	return true;
 }
 
+bool File::Open(const wchar_t* path, const wchar_t* openMode) {
+	//m_path = path;  wcstombs_s((size_t)0, m_path, path, (size_t)_TRUNCATE);
+	_wfopen_s(&m_pFile, path, openMode);
+	if (m_pFile == nullptr) {
+		return false;
+	}
+	fseek(m_pFile, 0, SEEK_END);
+	m_size = ftell(m_pFile);
+	fseek(m_pFile, 0, SEEK_SET);
+	return true;
+}
+
 long int File::GetSize() {
 	return m_size;
 }

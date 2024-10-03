@@ -8,7 +8,7 @@ TextInput::~TextInput()
 {
 }
 
-int TextInput::Init(const Window* parentWindow, TextInputDescriptor* textInputDescriptor, void(*onChangeCallback)())
+int TextInput::Init(const Window* parentWindow, TextInputDescriptor* textInputDescriptor, void(*onChangeCallback)(TextInput* textInput), int windowId)
 {
 	m_onChangeCallback = onChangeCallback;
 	const HWND& parentHWnd = parentWindow->GetWindowHandle();
@@ -22,7 +22,7 @@ int TextInput::Init(const Window* parentWindow, TextInputDescriptor* textInputDe
 		textInputDescriptor->width,
 		textInputDescriptor->height,
 		parentHWnd,
-		(HMENU)0,
+		(HMENU)windowId,
 		parentHInstance,
 		NULL
 	);
