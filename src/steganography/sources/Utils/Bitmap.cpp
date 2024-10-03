@@ -21,18 +21,7 @@ bool Bitmap::Init(const char* path) {
 	file.Close();
 	return true;
 }
-bool Bitmap::Init(Bitmap& bitmap)
-{
-	/*m_bfh = bitmap.m_bfh;
-	m_bih = bitmap.m_bih;
-	m_colorBits = m_buffer + m_bfh.bfOffBits;*/
-	m_buffer = new byte[bitmap.m_bfh.bfSize];
-	memcpy(m_buffer, bitmap.m_buffer, bitmap.m_bfh.bfSize);
-	memcpy(&m_bfh, m_buffer, sizeof(BITMAPFILEHEADER));
-	memcpy(&m_bih, m_buffer + sizeof(BITMAPFILEHEADER), sizeof(BITMAPINFOHEADER));
-	m_colorBits = m_buffer + m_bfh.bfOffBits;
-	return true;
-}
+
 bool Bitmap::Init(const wchar_t* path) {
 	File file;
 	file.Open(path, L"rb");

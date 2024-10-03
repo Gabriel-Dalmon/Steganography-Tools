@@ -186,8 +186,7 @@ void App::Decrypt(Button* pButtonClicked)
 		MessageBox(0, L"This bitmap has no data encrypted in its pixels.", 0, 0);
 		return;
 	}
-	int encryptedDataLength = originalBitmap.ReadTextHeader();
-	const char* encryptedData = originalBitmap.ReadEncryptedText(encryptedDataLength);
+	const char* encryptedData = originalBitmap.ReadEncryptedText();
 	app.m_pEncryptionTextInput->SetText(encryptedData);
 	delete encryptedData;
 }
@@ -243,8 +242,7 @@ void App::LoadFile(TextInput* pTextInput)
 	delete filePath;
 	if (originalBitmap.CheckSignEncrypted()) {
 		MessageBox(0, L"File is already encrypted.", 0, 0);
-		int encryptedDataLength = originalBitmap.ReadTextHeader();
-		const char* encryptedData = originalBitmap.ReadEncryptedText(encryptedDataLength);
+		const char* encryptedData = originalBitmap.ReadEncryptedText();
 		app.m_pEncryptionTextInput->SetText(encryptedData);
 		delete encryptedData;
 	}
@@ -322,8 +320,7 @@ void App::FileDialogTest(Button* button) {
 					CoTaskMemFree(filePath); // Free the memory allocated for the file path
 					if (originalBitmap.CheckSignEncrypted()) {
 						MessageBox(0, L"File is already encrypted.", 0, 0);
-						int encryptedDataLength = originalBitmap.ReadTextHeader();
-						const char* encryptedData = originalBitmap.ReadEncryptedText(encryptedDataLength);
+						const char* encryptedData = originalBitmap.ReadEncryptedText();
 						app.m_pEncryptionTextInput->SetText(encryptedData);
 						delete encryptedData;
 					}
