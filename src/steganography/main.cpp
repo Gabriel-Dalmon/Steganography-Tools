@@ -31,7 +31,7 @@ void EncryptButtonCallback()
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
-	AllocConsole();
+	/*AllocConsole();
 	FILE* consoleOut;
 	freopen_s(&consoleOut, "CONOUT$", "w", stdout);
 
@@ -46,7 +46,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	}
 	bitMP.EncryptText("TEST");
 	File testFile;
-	testFile.Open("C:/Users/mzins/Downloads/copy.bmp", "wb+");
+	testFile.Open("copy.bmp", "wb+");
 	testFile.Write(bitMP.GetBuffer(), bitMP.GetFileInfo().bfSize);
 	testFile.Close();
 
@@ -61,7 +61,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	}
 	else {
 		std::cout << "No encrypted text" << std::endl;
-	}
+	}*/
 
 	WindowClassDescriptor windowClassDescriptor;
 	WindowDescriptor windowDescriptor = { L"Window", 800, 600 };
