@@ -44,7 +44,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	else {
 		std::cout << "No encrypted text" << std::endl;
 	}
-	bitMP.EncryptText("CECI EST UN TEST AVEC UN TEXTE QUI PREND BEAUCOUP TROP DE PLACE, POUR VOIR SI ON ARRIVE A RESIZE L'IMAGE ET ECRIRE UN TEXTE AUSSI LONG DEDANS, AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+	bitMP.EncryptText("TEST");
 	File testFile;
 	testFile.Open("C:/Users/mzins/Downloads/copy.bmp", "wb+");
 	testFile.Write(bitMP.GetBuffer(), bitMP.GetFileInfo().bfSize);

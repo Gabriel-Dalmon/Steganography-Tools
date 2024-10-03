@@ -115,8 +115,8 @@ void Bitmap::setTextHeader(unsigned int lengthOfText) {
 }
 
 bool Bitmap::EncryptText(const char* text) {
-	int size = std::strlen(text);
-	if (size > MAX16BITS) {
+	unsigned int size = std::strlen(text);
+	if (size <= MAX16BITS) {
 		int bits = m_bfh.bfSize - m_bfh.bfOffBits - 24;
 		while (size * 6 > bits) {
 			DoubleSize();
