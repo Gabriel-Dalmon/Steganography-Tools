@@ -44,15 +44,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	else {
 		std::cout << "No encrypted text" << std::endl;
 	}
-	bitMP.EncryptText("CECI EST A");
+	bitMP.EncryptText("CECI EST UN TEST AVEC UN TEXTE QUI PREND BEAUCOUP TROP DE PLACE, POUR VOIR SI ON ARRIVE A RESIZE L'IMAGE ET ECRIRE UN TEXTE AUSSI LONG DEDANS, AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
 	File testFile;
-	testFile.Open("copy.bmp", "wb+");
+	testFile.Open("C:/Users/mzins/Downloads/copy.bmp", "wb+");
 	testFile.Write(bitMP.GetBuffer(), bitMP.GetFileInfo().bfSize);
 	testFile.Close();
 
 	Bitmap bitMP2;
-	bitMP2.Init("copy.bmp");
-
+	bitMP2.Init("C:/Users/mzins/Downloads/copy.bmp");
 
 
 	std::cout << bitMP2.CheckSignEncrypted() << std::endl;
@@ -63,21 +62,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	else {
 		std::cout << "No encrypted text" << std::endl;
 	}
-
-
-	/*
-	bitMP.uninit();
-	bitMP.Init("imgBMPTest.bmp");
-
-	std::cout << bitMP.CheckSignEncrypted() << std::endl;
-
-	int length2 = bitMP.ReadTextHeader();
-
-	std::cout << bitMP.ReadTextHeader() << std::endl;
-
-	std::cout << bitMP.ReadEncryptedText(length) << std::endl;
-	
-	*/
 
 	WindowClassDescriptor windowClassDescriptor;
 	WindowDescriptor windowDescriptor = { L"Window", 800, 600 };

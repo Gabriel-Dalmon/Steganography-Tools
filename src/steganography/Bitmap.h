@@ -1,5 +1,6 @@
 #pragma once
-#define ENCRYPTSIGN 300
+#define ENCRYPTSIGN 38977
+#define MAX16BITS 65535
 
 class Bitmap {
 	byte* m_buffer;
@@ -24,6 +25,8 @@ public:
 	void SetBits(byte value, byte numOfBits, byte* place);
 
 	byte ReadBits(byte numOfBits, byte* place);
+
+	void DoubleSize();
 
 	void SetBytes(unsigned int value, byte size, byte* place);
 

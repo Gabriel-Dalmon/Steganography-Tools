@@ -116,8 +116,13 @@ void Bitmap::setTextHeader(unsigned int lengthOfText) {
 
 bool Bitmap::EncryptText(const char* text) {
 	int size = std::strlen(text);
-	int bits = m_bfh.bfSize - m_bfh.bfOffBits - 24;
-	if (size < bits) {
+	if (size > MAX16BITS) {
+		int bits = m_bfh.bfSize - m_bfh.bfOffBits - 24;
+		while (size * 6 > bits) {
+			DoubleSize();
+			bits = m_bfh.bfSize - m_bfh.bfOffBits - 24;
+		}
+
 		setTextHeader(size);
 		byte* place = m_colorBits + 24;
 		for (int i = 0; i < size; i++) {
@@ -158,3 +163,40 @@ const char* Bitmap::ReadEncryptedText(int textLength) {
 	return returnArray;
 }
 
+void Bitmap::DoubleSize() {
+	BITMAPINFOHEADER newBIH = m_bih;
+	BITMAPFILEHEADER newBFH = m_bfh;
+
+	unsigned int oldSize = m_bfh.bfSize;
+	unsigned int oldWidth = m_bih.biWidth;
+	unsigned int oldHeight = m_bih.biHeight;
+	newBIH.biWidth = oldWidth * 2;
+	newBIH.biHeight = oldHeight * 2;
+	newBIH.biSizeImage = newBIH.biWidth * newBIH.biHeight * 3;
+	int size = newBIH.biSizeImage + m_bfh.bfOffBits;
+	newBFH.bfSize = size;
+
+	byte* newBuffer = new byte[size];
+	memset(newBuffer, 0, size);
+
+	memcpy(newBuffer, &newBFH, sizeof(BITMAPFILEHEADER));
+	byte* cpyPnter = newBuffer + sizeof(BITMAPFILEHEADER);
+	memcpy(cpyPnter, &newBIH , sizeof(BITMAPINFOHEADER));
+	
+	for (int y = 0; y < newBIH.biHeight; y++) {
+		for (int x = 0; x < newBIH.biWidth; x++) {
+			int newIndex = y * newBIH.biWidth * 3 + x * 3 + m_bfh.bfOffBits;
+			int xs = x/2;
+			int ys = y/2;
+			int oldIndex = ys * m_bih.biWidth * 3 + xs * 3 + m_bfh.bfOffBits;
+			//int newXYCoords = y * newBIH.biWidth * 3 + x * 3 + m_bfh.bfOffBits;
+			//int oldXYCoords = y * m_bih.biWidth * 3 + x * 3 + m_bfh.bfOffBits;
+			memcpy(newBuffer + newIndex, m_buffer + oldIndex, 3);
+		}
+	}
+	delete[] m_buffer;
+	m_buffer = newBuffer;
+	m_bih = newBIH;
+	m_bfh = newBFH;
+	m_colorBits = m_buffer + m_bfh.bfOffBits;
+}
