@@ -1,6 +1,6 @@
 #pragma once
 
-struct ImageDescriptor {
+struct ImageResourceDescriptor {
 	int x = 0;
 	int y = 0;
 	int width = 0;
@@ -9,17 +9,11 @@ struct ImageDescriptor {
 	int scaleY = 1;
 };
 
-class GraphicResource {
+class ImageResource : public GraphicResource {
 public:
-	virtual void Draw(HDC compatibleDevice, HDC sourceCompatibleDevice) = 0;
-	virtual void Release() = 0;
-};
-
-class Image : public GraphicResource {
-public:
-	Image();
-	~Image();
-	int Init(Bitmap* bitmap, ImageDescriptor* imageDescriptor, HDC compatibleDevice);
+	ImageResource();
+	~ImageResource();
+	int Init(Bitmap* bitmap, ImageResourceDescriptor* imageDescriptor, HDC compatibleDevice);
 	void Release();
 	void Draw(HDC compatibleDevice, HDC sourceCompatibleDevice) override;
 private:

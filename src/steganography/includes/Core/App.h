@@ -10,8 +10,10 @@ public:
 	
 	static void OnWindowCreateCallback(Window* pWindow);
 	static void Encrypt(Button* pButtonClicked);
+	static void Decrypt(Button* pButtonClicked);
 	static void SaveOutput(Button* pButtonClicked);
 	static void LoadFile(TextInput* pTextInput);
+	static void FileDialogTest(Button* button);
 	Window* m_pMainWindow;
 private:
 	App();
@@ -21,8 +23,8 @@ private:
 	TextInput* m_pEncryptionTextInput;
 
 	Bitmap* m_pOriginalBitmap;
-	Image* m_pOriginalImage;	
+	ImageResource* m_pOriginalImage;
 	
 	Bitmap* m_pOutputBitmap;
-	Image* m_pOutputImage;
+	ImageResource* m_pOutputImage;
 };

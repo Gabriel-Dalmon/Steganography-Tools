@@ -13,6 +13,7 @@ public:
 	long int GetSize();
 
 	void Read(byte* buffer);
+	void ReadChunk(byte* buffer, int size);
 
 	void Write(byte* buffer, int size);
 

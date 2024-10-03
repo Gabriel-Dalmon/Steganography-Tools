@@ -3,6 +3,19 @@
 //------------------------------------------------------------------------------
 Window::Window()
 {
+    m_hWnd = NULL;
+	m_hInstance = NULL;
+	m_windowWidth = 0;
+	m_windowHeight = 0;
+	m_onWindowCreateCallback = nullptr;
+	m_windowClassName = L"";
+	m_hWnd = NULL;
+	m_hInstance = NULL;
+	m_windowWidth = 0;
+	m_windowHeight = 0;
+	m_onWindowCreateCallback = nullptr;
+	m_windowClassName = L"";
+	m_graphicResources.clear();
 }
 
 //------------------------------------------------------------------------------
@@ -24,6 +37,7 @@ int Window::Create(WindowDescriptor* windowDescriptor)
 {
     m_windowWidth = windowDescriptor->width;
     m_windowHeight = windowDescriptor->height;
+    m_backgroundColor = windowDescriptor->backgroundColor;
     m_onWindowCreateCallback = windowDescriptor->onWindowCreateCallback;
     m_hWnd = CreateWindow(
         m_windowClassName,
@@ -84,45 +98,44 @@ ATOM Window::RegisterWindowClass(WindowClassDescriptor* windowClassDescriptor)
 //------------------------------------------------------------------------------
 void Window::Release()
 {
-    // Close window
+    // Close subwindows
+    for(auto& Component : m_components)
+	{
+		Component->Release();
+        delete Component;
+	}
+    m_components.clear();
+
+    // Destroy graphic resources
     for(auto& GraphicResource : m_graphicResources)
 	{
 		GraphicResource->Release();
+        delete GraphicResource;
 	}
+    m_graphicResources.clear();
     DestroyWindow(m_hWnd);
 }
 
 //------------------------------------------------------------------------------
-Button* Window::CreateButton(ButtonDescriptor* buttonDescriptor)
+ImageResource* Window::CreateImage(Bitmap* bitmap, ImageResourceDescriptor* imageDescriptor)
 {
-    Button* button = new Button();
-    button->Init(this, buttonDescriptor);
-    m_buttons.insert(button);
-    return button;
-}
-
-//------------------------------------------------------------------------------
-TextInput* Window::CreateTextInput(TextInputDescriptor* textInputDescriptor, void(*onChangeCallback)(TextInput* textInput))
-{
-    TextInput* textInput = new TextInput();
-    textInput->Init(this, textInputDescriptor, onChangeCallback);
-    m_textInputs.insert(textInput);
-    return textInput;
-}
-
-//------------------------------------------------------------------------------
-Image* Window::CreateImage(Bitmap* bitmap, ImageDescriptor* imageDescriptor)
-{
-    Image* image = new Image();
+    ImageResource* image = new ImageResource();
     image->Init(bitmap, imageDescriptor, GetDC(m_hWnd));
     m_graphicResources.insert(image);
     return image;
 }
 
-void Window::DeleteImage(Image* image)
+void Window::DeleteComponent(Component* component)
+{
+    m_components.erase(component);
+	component->Release();
+	delete component;
+}
+
+void Window::DeleteImage(ImageResource* image)
 {
     m_graphicResources.erase(image);
-    //image->Release();
+    image->Release();
 	delete image;
 }
 
@@ -151,12 +164,18 @@ LRESULT CALLBACK Window::WindowProcess(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
     case WM_COMMAND:
         window.OnWindowMessageCommand(wParam, lParam);
     break;
+    case WM_DRAWITEM:
+		window.OnWindowMessageDrawItem(wParam, lParam);
+    break;
     case WM_PAINT:
         window.OnWindowMessagePaint();
     break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
+    case WM_ERASEBKGND:
+		window.OnWindowMessageEraseBackground(reinterpret_cast<HDC>(wParam));
+        return 1;
     default:
         return DefWindowProc(hWnd, uMsg, wParam, lParam);
     }
@@ -178,6 +197,16 @@ void Window::OnWindowMessageCreate(HWND hWnd)
     UpdateWindow(m_hWnd);
 }
 
+void Window::OnWindowMessageEraseBackground(HDC hdc)
+{
+    HBRUSH hBrush = CreateSolidBrush(m_backgroundColor);  // Red background
+    RECT rect;
+    GetClientRect(m_hWnd, &rect);
+    FillRect(hdc, &rect, hBrush);
+    DeleteObject(hBrush);
+    return;
+}
+
 //------------------------------------------------------------------------------
 void Window::OnWindowMessageCommand(WPARAM wParam, LPARAM lParam)
 {
@@ -193,7 +222,7 @@ void Window::OnWindowMessageCommand(WPARAM wParam, LPARAM lParam)
     case EN_CHANGE:
     {
         TextInput* textInput = TextInput::GetInstance(controlHWnd);
-        if (m_textInputs.find(textInput) == m_textInputs.end()) return;
+        if (m_components.find(textInput) == m_components.end()) return;
         textInput->OnChange();
         return;
     }
@@ -202,6 +231,16 @@ void Window::OnWindowMessageCommand(WPARAM wParam, LPARAM lParam)
         button.Execute();
         return;
     }
+}
+
+void Window::OnWindowMessageDrawItem(WPARAM wParam, LPARAM lParam)
+{
+    LPDRAWITEMSTRUCT lpDrawItem = (LPDRAWITEMSTRUCT)lParam;
+	if (lpDrawItem->CtlType == ODT_BUTTON) {
+		Button& button = *Button::GetInstance(lpDrawItem->hwndItem);
+		button.Draw(lpDrawItem->hDC, &lpDrawItem->rcItem);
+	}
+	return;
 }
 
 //------------------------------------------------------------------------------

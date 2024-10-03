@@ -20,20 +20,23 @@
 #define new DEBUG_NEW
 #endif
 
-// TODO: organize pre-compiled headers into sub categories headers (ex: ui.h, file_management.h, steganography.h, etc)
-
 // Forward declarations
 template<typename WindowType>
-class AbstractWindow;
+class CRTPComponent;
+class Component;
 struct WindowDescriptor;
+struct WindowClassDescriptor;
 class Window;
+struct ComponentDescriptor;
+template<typename ComponentType>
+struct GetComponentDescriptorType;
 struct TextInputDescriptor;
 class TextInput;
 struct ButtonDescriptor;
 class Button;
 class GraphicResource;
-struct ImageDescriptor;
-class Image;
+struct ImageResourceDescriptor;
+class ImageResource;
 class Bitmap;
 class File;
 class App;
@@ -41,12 +44,8 @@ class App;
 #define MAIN_WINDOW_ID 106
 #define RELEASE(p) {if (p){ p->Release(); p = nullptr;}}
 
-#include "Window.h"
-#include "Button.h"
-#include "TextInput.h"
-#include "Image.h"
-#include "Bitmap.h"
-#include "File.h"
-#include "BitUtils.h"
+
+#include "Core/App.h"
+#include "Graphics.h"
+#include "Utils.h"
 #include "Steganography.h"
-#include "App.h"

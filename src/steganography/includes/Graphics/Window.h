@@ -11,30 +11,11 @@ struct WindowDescriptor {
 	LPCWSTR title = L"Windows App Title";
 	int width = 800;
 	int	height = 600;
+	COLORREF backgroundColor = RGB(255, 255, 255);
 	void (*onWindowCreateCallback)(Window* pWindow) = nullptr;
 };
 
-template<typename DerivedWindowType>
-class AbstractWindow {
-public:
-	void SetInstance() {
-		SetWindowLongPtr(m_hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
-	};
-	
-	static DerivedWindowType* GetInstance(HWND hWnd) {
-		return reinterpret_cast<DerivedWindowType*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
-		//return (instance->type == typeid(DerivedWindowType)) ? instance : nullptr;
-	};
-
-protected:
-	HWND m_hWnd = nullptr;
-	//type_info type = typeid(DerivedWindowType);
-private:
-	//AbstractWindow();
-	friend DerivedWindowType;
-};
-
-class Window : public AbstractWindow<Window>
+class Window : public CRTPComponent<Window>
 {
 public:
 	Window();
@@ -54,12 +35,19 @@ public:
 
 	inline void SetWindowHandle(HWND hWnd) { m_hWnd = hWnd; };
 
-	// Subwindow Factories
-	Button* CreateButton(ButtonDescriptor* buttonDescriptor);
-	TextInput* CreateTextInput(TextInputDescriptor* buttonDescriptor, void(*onChangeCallback)(TextInput* textInput) = nullptr);
-	Image* CreateImage(Bitmap* bitmap, ImageDescriptor* imageDescriptor);
+	// Interface Factories
+	template<typename ComponentType>
+	ComponentType* CreateComponent(ComponentDescriptor* pComponentDescriptor) {
+		static_assert(std::is_base_of<CRTPComponent<ComponentType>, ComponentType>::value, "ComponentType must inherit from Component");
+		ComponentType* component = new ComponentType();
+		component->Init(this, static_cast<GetComponentDescriptorType<ComponentType>::type*>(pComponentDescriptor));
+		m_components.insert(component);
+		return component;
+	};
+	ImageResource* CreateImage(Bitmap* bitmap, ImageResourceDescriptor* imageDescriptor);
 
-	void DeleteImage(Image* image);
+	void DeleteComponent(Component* component);
+	void DeleteImage(ImageResource* image);
 
 	void Redraw();
 
@@ -68,7 +56,9 @@ private:
 	static LRESULT __stdcall WindowProcess(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	void OnWindowMessageCreate(HWND hWnd);
+	void OnWindowMessageEraseBackground(HDC hdc);
 	void OnWindowMessageCommand(WPARAM wParam, LPARAM lParam);
+	void OnWindowMessageDrawItem(WPARAM wParam, LPARAM lParam);
 	void OnWindowMessagePaint();
 
 private:
@@ -76,10 +66,11 @@ private:
 	LPCWSTR m_windowClassName = nullptr;
 	int m_windowWidth = 0;
 	int m_windowHeight = 0;
+	COLORREF m_backgroundColor = RGB(255, 255, 255);
 
 	void (*m_onWindowCreateCallback)(Window* pWindow) = nullptr;
 
-	std::unordered_set<Button*> m_buttons = {};
-	std::unordered_set<TextInput*> m_textInputs = {};
+	std::unordered_set<Component*> m_components = {};
 	std::unordered_set<GraphicResource*> m_graphicResources = {};
 };
+

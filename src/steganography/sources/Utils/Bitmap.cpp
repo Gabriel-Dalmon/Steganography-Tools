@@ -1,7 +1,4 @@
 #include "pch.h"
-#include "Bitmap.h"
-#include "File.h"
-#include "BitUtils.h"
 
 
 Bitmap::Bitmap() {
@@ -50,11 +47,36 @@ bool Bitmap::Init(const wchar_t* path) {
 	return true;
 }
 
-void Bitmap::uninit() {
+bool Bitmap::Init(Bitmap& bitmap)
+{
+	m_buffer = new byte[bitmap.m_bfh.bfSize];
+	memcpy(m_buffer, bitmap.m_buffer, bitmap.m_bfh.bfSize);
+	memcpy(&m_bfh, m_buffer, sizeof(BITMAPFILEHEADER));
+	memcpy(&m_bih, m_buffer + sizeof(BITMAPFILEHEADER), sizeof(BITMAPINFOHEADER));
+	m_colorBits = m_buffer + m_bfh.bfOffBits;
+	return true;
+}
+
+bool Bitmap::Save(const char* path)
+{
+	File outputFile;
+	bool isFileOpened = outputFile.Open(path, "wb+");
+	if(!isFileOpened) {
+		outputFile.Close();
+		return false;
+	}
+	outputFile.Write(GetBuffer(), GetFileInfo().bfSize);
+	outputFile.Close();
+	return true;
+}
+
+void Bitmap::Release()
+{
+	delete[] m_buffer;
 	m_buffer = nullptr;
+	m_colorBits = nullptr;
 	memset(&m_bfh, 0, sizeof(BITMAPFILEHEADER));
 	memset(&m_bih, 0, sizeof(BITMAPINFOHEADER));
-	m_colorBits = nullptr;
 }
 
 HBITMAP Bitmap::GenerateHBitMap(HDC hdc) {
