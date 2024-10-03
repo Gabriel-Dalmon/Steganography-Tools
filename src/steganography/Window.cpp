@@ -111,25 +111,22 @@ void Window::Redraw() {
 
 LRESULT CALLBACK Window::WindowProcess(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    Window& window = *Window::GetInstance(hWnd);
-    App& app = App::instance();
-    Window& window2 = *app.m_pMainWindow;
+    Window* window = Window::GetInstance(hWnd);
     switch (uMsg)
     {
     case WM_CREATE:
     {
-        int a = 5;
-        //window = *app.m_pMainWindow;
-        window2.SetWindowHandle(hWnd);
-        window2.SetInstance();
-        window2.OnWindowMessageCreate();
+        window = App::instance().m_pMainWindow;
+        window->SetWindowHandle(hWnd);
+        window->SetInstance();
+        window->OnWindowMessageCreate();
         break;
     }
     case WM_COMMAND:
-        window.OnWindowMessageCommand(wParam, lParam);
+        window->OnWindowMessageCommand(wParam, lParam);
     break;
     case WM_PAINT:
-        window.OnWindowMessagePaint();
+        window->OnWindowMessagePaint();
     break;
     case WM_DESTROY:
         PostQuitMessage(0);
