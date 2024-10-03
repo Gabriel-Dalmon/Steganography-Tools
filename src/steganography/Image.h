@@ -12,6 +12,7 @@ struct ImageDescriptor {
 class GraphicResource {
 public:
 	virtual void Draw(HDC compatibleDevice, HDC sourceCompatibleDevice) = 0;
+	virtual void Release() = 0;
 };
 
 class Image : public GraphicResource {
@@ -19,6 +20,7 @@ public:
 	Image();
 	~Image();
 	int Init(Bitmap* bitmap, ImageDescriptor* imageDescriptor, HDC compatibleDevice);
+	void Release();
 	void Draw(HDC compatibleDevice, HDC sourceCompatibleDevice) override;
 private:
 	HBITMAP m_hGraphicResource;

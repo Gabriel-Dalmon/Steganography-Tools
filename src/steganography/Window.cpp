@@ -1,13 +1,16 @@
 #include "pch.h"
 
+//------------------------------------------------------------------------------
 Window::Window()
 {
 }
 
+//------------------------------------------------------------------------------
 Window::~Window()
 {
 }
 
+//------------------------------------------------------------------------------
 int Window::Init(HINSTANCE hInstance, WindowClassDescriptor* windowClassDescriptor)
 {
     m_hInstance = hInstance;
@@ -16,6 +19,7 @@ int Window::Init(HINSTANCE hInstance, WindowClassDescriptor* windowClassDescript
     return 0;
 }
 
+//------------------------------------------------------------------------------
 int Window::Create(WindowDescriptor* windowDescriptor)
 {
     m_windowWidth = windowDescriptor->width;
@@ -32,18 +36,19 @@ int Window::Create(WindowDescriptor* windowDescriptor)
         0,
         0,
         m_hInstance,
-        0
+        this
     );
 
     if (m_hWnd == NULL)
     {
         MessageBox(0, L"CreateWindow FAILED", 0, 0);
-        return -1;
+        return 1;
     }
     
     return 0;
 }
 
+//------------------------------------------------------------------------------
 void Window::Run()
 {
     MSG msg = { 0 };
@@ -55,6 +60,7 @@ void Window::Run()
 
 }
 
+//------------------------------------------------------------------------------
 ATOM Window::RegisterWindowClass(WindowClassDescriptor* windowClassDescriptor)
 {
     WNDCLASSEXW wcex;
@@ -75,20 +81,27 @@ ATOM Window::RegisterWindowClass(WindowClassDescriptor* windowClassDescriptor)
     return RegisterClassExW(&wcex);
 }
 
+//------------------------------------------------------------------------------
 void Window::Release()
 {
     // Close window
+    for(auto& GraphicResource : m_graphicResources)
+	{
+		GraphicResource->Release();
+	}
     DestroyWindow(m_hWnd);
 }
 
-Button* Window::CreateButton(ButtonDescriptor* buttonDescriptor, void(*onClickedCallback)(Button* button))
+//------------------------------------------------------------------------------
+Button* Window::CreateButton(ButtonDescriptor* buttonDescriptor)
 {
     Button* button = new Button();
-    button->Init(this, buttonDescriptor, onClickedCallback);
+    button->Init(this, buttonDescriptor);
     m_buttons.insert(button);
     return button;
 }
 
+//------------------------------------------------------------------------------
 TextInput* Window::CreateTextInput(TextInputDescriptor* textInputDescriptor, void(*onChangeCallback)(TextInput* textInput))
 {
     TextInput* textInput = new TextInput();
@@ -97,6 +110,7 @@ TextInput* Window::CreateTextInput(TextInputDescriptor* textInputDescriptor, voi
     return textInput;
 }
 
+//------------------------------------------------------------------------------
 Image* Window::CreateImage(Bitmap* bitmap, ImageDescriptor* imageDescriptor)
 {
     Image* image = new Image();
@@ -105,28 +119,40 @@ Image* Window::CreateImage(Bitmap* bitmap, ImageDescriptor* imageDescriptor)
     return image;
 }
 
+void Window::DeleteImage(Image* image)
+{
+    m_graphicResources.erase(image);
+    //image->Release();
+	delete image;
+}
+
+//------------------------------------------------------------------------------
 void Window::Redraw() {
     RedrawWindow(GetWindowHandle(), NULL, NULL, RDW_INVALIDATE);
 }
 
+//------------------------------------------------------------------------------
 LRESULT CALLBACK Window::WindowProcess(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    Window* window = Window::GetInstance(hWnd);
+    Window& window = *Window::GetInstance(hWnd);
     switch (uMsg)
     {
     case WM_CREATE:
     {
-        window = App::instance().m_pMainWindow;
-        window->SetWindowHandle(hWnd);
-        window->SetInstance();
-        window->OnWindowMessageCreate();
+        //----------------------------------------------------------------------
+        /** Prior to WM_CREATE Window::GetInstance(hWnd) will return null. The
+        * Window class instance is passed in lParam Create Struct for the 
+        * WM_CREATE Message */
+        const LPCREATESTRUCT& createStruct = reinterpret_cast<LPCREATESTRUCT>(lParam);
+        Window& initWindow = *reinterpret_cast<Window*>(createStruct->lpCreateParams);
+        initWindow.OnWindowMessageCreate(hWnd);
         break;
     }
     case WM_COMMAND:
-        window->OnWindowMessageCommand(wParam, lParam);
+        window.OnWindowMessageCommand(wParam, lParam);
     break;
     case WM_PAINT:
-        window->OnWindowMessagePaint();
+        window.OnWindowMessagePaint();
     break;
     case WM_DESTROY:
         PostQuitMessage(0);
@@ -137,40 +163,53 @@ LRESULT CALLBACK Window::WindowProcess(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
     return 0;
 }
 
-void Window::OnWindowMessageCreate()
+//------------------------------------------------------------------------------
+void Window::OnWindowMessageCreate(HWND hWnd)
 {
+    //--------------------------------------------------------------------------
+    /** Generic Window Class instructions to execute on WM_CREATE */
+    m_hWnd = hWnd;
     SetInstance();
     ShowWindow(m_hWnd, SW_SHOW);
+    //--------------------------------------------------------------------------
+    /** App specific instructions to execute on WM_CREATE */
     if(m_onWindowCreateCallback) m_onWindowCreateCallback(this);
+    //--------------------------------------------------------------------------
     UpdateWindow(m_hWnd);
 }
 
+//------------------------------------------------------------------------------
 void Window::OnWindowMessageCommand(WPARAM wParam, LPARAM lParam)
 {
+    //--------------------------------------------------------------------------
     const HWND& controlHWnd = reinterpret_cast<HWND>(lParam);
+    /** Return if controlHWnd is null or LOWORD(wParam) indicates the control 
+    * belongs to another window. */
     if (!controlHWnd) return;
     if (LOWORD(wParam) != MAIN_WINDOW_ID) return;
+
+    //--------------------------------------------------------------------------
     switch (HIWORD(wParam)) {
     case EN_CHANGE:
+    {
         TextInput* textInput = TextInput::GetInstance(controlHWnd);
         if (m_textInputs.find(textInput) == m_textInputs.end()) return;
         textInput->OnChange();
-        break;
+        return;
     }
-    switch (wParam) {
     case BN_CLICKED:
         Button& button = *Button::GetInstance(controlHWnd);
         button.Execute();
-        break;
-    }
-    return;
-}
-
-void Window::OnWindowMessagePaint()
-{
-    if (m_graphicResources.size() == 0) {
         return;
     }
+}
+
+//------------------------------------------------------------------------------
+void Window::OnWindowMessagePaint()
+{
+    //--------------------------------------------------------------------------
+    /** BeginPaint and EndPaint must both be called otherwise unexpected
+    * behavior may occur. (ex: MessageBoxes not being displayed) */
     PAINTSTRUCT ps;
     HDC compatibleDevice = BeginPaint(m_hWnd, &ps);
     HDC sourceCompatibleDevice = CreateCompatibleDC(compatibleDevice);

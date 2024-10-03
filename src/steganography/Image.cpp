@@ -48,6 +48,11 @@ int Image::Init(Bitmap* bitmap, ImageDescriptor* imageDescriptor, HDC compatible
 	return 0;
 }
 
+void Image::Release()
+{
+	DeleteObject(m_hGraphicResource);
+}
+
 void Image::Draw(HDC compatibleDevice, HDC sourceCompatibleDevice)
 {
 	SelectObject(sourceCompatibleDevice, m_hGraphicResource);

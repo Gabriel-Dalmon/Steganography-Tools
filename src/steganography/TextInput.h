@@ -15,7 +15,10 @@ public:
 	~TextInput();
 
 	int Init(const Window* parentWindow, TextInputDescriptor* textInputDescriptor, void(*onChangeCallback)(TextInput* textInput), int windowId = MAIN_WINDOW_ID);
-	wchar_t* GetText() const;
+	wchar_t* GetWText() const;
+	char* GetText() const;
+	void SetText(const char* text);
+	void SetText(wchar_t* text);
 	inline void OnChange() { if (m_onChangeCallback)m_onChangeCallback(this); };
 
 

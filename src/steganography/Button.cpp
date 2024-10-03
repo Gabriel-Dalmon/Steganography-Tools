@@ -8,10 +8,10 @@ Button::~Button()
 {
 }
 
-int Button::Init(const Window* parentWindow, ButtonDescriptor* buttonDescriptor, void (*onClickCallback)(Button* button), int windowId) {
+int Button::Init(const Window* parentWindow, ButtonDescriptor* buttonDescriptor, int windowId) {
 	const HWND& parentHWnd = parentWindow->GetWindowHandle();
 	const HINSTANCE& parentHInstance = parentWindow->GetHInstance();
-	m_onClickCallback = onClickCallback;
+	m_onClickCallback = buttonDescriptor->onClickCallback;
 	m_hWnd = CreateWindow(
 		L"BUTTON",
 		buttonDescriptor->text,

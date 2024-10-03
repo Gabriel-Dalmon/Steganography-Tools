@@ -55,9 +55,11 @@ public:
 	inline void SetWindowHandle(HWND hWnd) { m_hWnd = hWnd; };
 
 	// Subwindow Factories
-	Button* CreateButton(ButtonDescriptor* buttonDescriptor, void(*onClickedCallback)(Button* button));
+	Button* CreateButton(ButtonDescriptor* buttonDescriptor);
 	TextInput* CreateTextInput(TextInputDescriptor* buttonDescriptor, void(*onChangeCallback)(TextInput* textInput) = nullptr);
 	Image* CreateImage(Bitmap* bitmap, ImageDescriptor* imageDescriptor);
+
+	void DeleteImage(Image* image);
 
 	void Redraw();
 
@@ -65,7 +67,7 @@ private:
 	ATOM RegisterWindowClass(WindowClassDescriptor* windowClassDescriptor);
 	static LRESULT __stdcall WindowProcess(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-	void OnWindowMessageCreate();
+	void OnWindowMessageCreate(HWND hWnd);
 	void OnWindowMessageCommand(WPARAM wParam, LPARAM lParam);
 	void OnWindowMessagePaint();
 
