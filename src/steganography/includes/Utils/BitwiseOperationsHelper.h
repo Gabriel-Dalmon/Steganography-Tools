@@ -3,7 +3,7 @@
 #define MAX16BITS 65535
 
 
-class BitUtils {
+class BitwiseOperationsHelper {
 public:
 	static void SetBits(byte value, byte numOfBits, byte* place);
 

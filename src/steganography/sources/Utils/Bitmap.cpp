@@ -105,14 +105,14 @@ bool Bitmap::EncryptText(const char* text) {
 			bits = m_bfh.bfSize - m_bfh.bfOffBits - 24;
 		}
 
-		BitUtils::SetBytes(size, 2, m_colorBits + 12);
+		BitwiseOperationsHelper::SetBytes(size, 2, m_colorBits + 12);
 		byte* place = m_colorBits + 24;
 		for (int i = 0; i < size; i++) {
-			BitUtils::SetBytes((unsigned int)text[i], 2, place);
+			BitwiseOperationsHelper::SetBytes((unsigned int)text[i], 2, place);
 			place += 6;
 		}
 		place = m_colorBits;
-		BitUtils::SetSignEncrypted(place);
+		BitwiseOperationsHelper::SetSignEncrypted(place);
 		return true;
 	}
 	else {
@@ -122,7 +122,7 @@ bool Bitmap::EncryptText(const char* text) {
 
 bool Bitmap::CheckSignEncrypted() {
 	unsigned int sign = ENCRYPTSIGN;
-	unsigned int sign2 = (unsigned int)BitUtils::ReadBytes(2, m_colorBits);
+	unsigned int sign2 = (unsigned int)BitwiseOperationsHelper::ReadBytes(2, m_colorBits);
 	if (sign2 == sign) {
 		return true;
 	}
@@ -131,11 +131,11 @@ bool Bitmap::CheckSignEncrypted() {
 
 const char* Bitmap::ReadEncryptedText() {
 	if (CheckSignEncrypted()) {
-		unsigned int textLength = BitUtils::ReadBytes(2, m_colorBits + 12);
+		unsigned int textLength = BitwiseOperationsHelper::ReadBytes(2, m_colorBits + 12);
 		char* returnArray = new char[textLength + 1];
 		byte* place = m_colorBits + 24;
 		for (int i = 0; i < textLength; i++) {
-			returnArray[i] = (char)BitUtils::ReadBytes(1, place);
+			returnArray[i] = (char)BitwiseOperationsHelper::ReadBytes(1, place);
 			place += 6;
 		}
 		returnArray[textLength] = '\0';
