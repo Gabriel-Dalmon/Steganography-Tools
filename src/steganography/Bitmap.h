@@ -24,29 +24,11 @@ public:
 
 	byte* GetBuffer();
 
-	void SetBits(byte value, byte numOfBits, byte* place);
-
-	byte ReadBits(byte numOfBits, byte* place);
-
 	void DoubleSize();
-
-	void SetBytes(unsigned int value, byte size, byte* place);
-
-	unsigned int ReadBytes(byte size, byte* place);
-
-	void SetSignEncrypted();
-
-	inline BYTE* GetPixelsBuffer() const { return m_colorBits; };
-
-	void setTextHeader(unsigned int lengthOfText);
 
 	bool EncryptText(const char* text);
 
-	bool CheckSignEncrypted();
-
-	unsigned int ReadTextHeader();
-
-	const char* ReadEncryptedText(int textLength);
+	const char* ReadEncryptedText();
 
 	void uninit();
 
