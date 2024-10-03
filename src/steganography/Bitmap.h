@@ -30,6 +30,10 @@ public:
 
 	const char* ReadEncryptedText();
 
+	bool CheckSignEncrypted();
+
+	inline byte* GetPixelsBuffer() { return m_colorBits; };
+
 	void uninit();
 
 	~Bitmap() {};

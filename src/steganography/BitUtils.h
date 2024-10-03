@@ -15,7 +15,5 @@ public:
 
 	static unsigned int ReadBytes(byte size, byte* place);
 
-	static bool CheckSignEncrypted(byte* place);
-
 
 };

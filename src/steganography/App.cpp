@@ -173,8 +173,7 @@ void App::LoadFile(TextInput* pTextInput)
 	orinalBitmap.Init(filePath);
 	if (orinalBitmap.CheckSignEncrypted()) {
 		MessageBox(0, L"File is already encrypted. \n Click OK to decrypt it.", 0, 0);
-		int encryptedDataLength = orinalBitmap.ReadTextHeader();
-		const char* encryptedData = orinalBitmap.ReadEncryptedText(encryptedDataLength);
+		const char* encryptedData = orinalBitmap.ReadEncryptedText();
 		std::cout << encryptedData << std::endl;
 		app.m_pEncryptionTextInput->SetText(encryptedData);
 	}

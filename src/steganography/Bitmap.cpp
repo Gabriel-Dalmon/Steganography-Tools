@@ -24,6 +24,32 @@ bool Bitmap::Init(const char* path) {
 	file.Close();
 	return true;
 }
+bool Bitmap::Init(Bitmap& bitmap)
+{
+	/*m_bfh = bitmap.m_bfh;
+	m_bih = bitmap.m_bih;
+	m_colorBits = m_buffer + m_bfh.bfOffBits;*/
+	m_buffer = new byte[bitmap.m_bfh.bfSize];
+	memcpy(m_buffer, bitmap.m_buffer, bitmap.m_bfh.bfSize);
+	memcpy(&m_bfh, m_buffer, sizeof(BITMAPFILEHEADER));
+	memcpy(&m_bih, m_buffer + sizeof(BITMAPFILEHEADER), sizeof(BITMAPINFOHEADER));
+	m_colorBits = m_buffer + m_bfh.bfOffBits;
+	return true;
+}
+bool Bitmap::Init(const wchar_t* path) {
+	File file;
+	file.Open(path, L"rb");
+	long int size = file.GetSize();
+	m_buffer = new byte[size];
+
+	file.Read(m_buffer);
+	memcpy(&m_bfh, m_buffer, sizeof(BITMAPFILEHEADER));
+	memcpy(&m_bih, m_buffer + sizeof(BITMAPFILEHEADER), sizeof(BITMAPINFOHEADER));
+	m_colorBits = m_buffer + m_bfh.bfOffBits;
+
+	return true;
+}
+
 void Bitmap::uninit() {
 	m_buffer = nullptr;
 	memset(&m_bfh, 0, sizeof(BITMAPFILEHEADER));
@@ -72,8 +98,17 @@ bool Bitmap::EncryptText(const char* text) {
 	}
 }
 
+bool Bitmap::CheckSignEncrypted() {
+	unsigned int sign = ENCRYPTSIGN;
+	unsigned int sign2 = (unsigned int)BitUtils::ReadBytes(2, m_colorBits);
+	if (sign2 == sign) {
+		return true;
+	}
+	return false;
+}
+
 const char* Bitmap::ReadEncryptedText() {
-	if (BitUtils::CheckSignEncrypted) {
+	if (CheckSignEncrypted()) {
 		unsigned int textLength = BitUtils::ReadBytes(2, m_colorBits + 12);
 		char* returnArray = new char[textLength + 1];
 		byte* place = m_colorBits + 24;

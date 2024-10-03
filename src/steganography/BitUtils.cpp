@@ -63,12 +63,3 @@ void BitUtils::SetSignEncrypted(byte* place) {
 	unsigned int sign = ENCRYPTSIGN;
 	BitUtils::SetBytes(sign, 2, place);
 }
-
-bool BitUtils::CheckSignEncrypted(byte* place) {
-	unsigned int sign = ENCRYPTSIGN;
-	unsigned int sign2 = (unsigned int)BitUtils::ReadBytes(2, place);
-	if (sign2 == sign) {
-		return true;
-	}
-	return false;
-}
