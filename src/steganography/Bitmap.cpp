@@ -72,15 +72,18 @@ bool Bitmap::EncryptText(const char* text) {
 }
 
 const char* Bitmap::ReadEncryptedText() {
-	unsigned int textLength = BitUtils::ReadBytes(2, m_colorBits + 12);
-	char* returnArray = new char[textLength+1];
-	byte* place = m_colorBits + 24;
-	for (int i = 0; i < textLength; i++) {
-		returnArray[i] = (char)BitUtils::ReadBytes(1, place);
-		place += 6;
+	if (BitUtils::CheckSignEncrypted) {
+		unsigned int textLength = BitUtils::ReadBytes(2, m_colorBits + 12);
+		char* returnArray = new char[textLength + 1];
+		byte* place = m_colorBits + 24;
+		for (int i = 0; i < textLength; i++) {
+			returnArray[i] = (char)BitUtils::ReadBytes(1, place);
+			place += 6;
+		}
+		returnArray[textLength] = '\0';
+		return returnArray;
 	}
-	returnArray[textLength] = '\0';
-	return returnArray;
+	return nullptr;
 }
 
 void Bitmap::DoubleSize() {
