@@ -43,6 +43,20 @@ bool Bitmap::Init(const wchar_t* path) {
 	return true;
 }
 
+bool Bitmap::Init(const wchar_t* path) {
+	File file;
+	file.Open(path, L"rb");
+	long int size = file.GetSize();
+	m_buffer = new byte[size];
+
+	file.Read(m_buffer);
+	memcpy(&m_bfh, m_buffer, sizeof(BITMAPFILEHEADER));
+	memcpy(&m_bih, m_buffer + sizeof(BITMAPFILEHEADER), sizeof(BITMAPINFOHEADER));
+	m_colorBits = m_buffer + m_bfh.bfOffBits;
+
+	return true;
+}
+
 HBITMAP Bitmap::GenerateHBitMap(HDC hdc) {
 	HBITMAP bmpTest = CreateDIBitmap(hdc, &m_bih, CBM_INIT, m_colorBits, (BITMAPINFO*)&m_bih, DIB_RGB_COLORS);
 	return bmpTest;
