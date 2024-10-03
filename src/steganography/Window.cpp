@@ -20,6 +20,7 @@ int Window::Create(WindowDescriptor* windowDescriptor)
 {
     m_windowWidth = windowDescriptor->width;
     m_windowHeight = windowDescriptor->height;
+    m_onWindowCreateCallback = windowDescriptor->onWindowCreateCallback;
     m_hWnd = CreateWindow(
         m_windowClassName,
         windowDescriptor->title,
@@ -39,10 +40,7 @@ int Window::Create(WindowDescriptor* windowDescriptor)
         MessageBox(0, L"CreateWindow FAILED", 0, 0);
         return -1;
     }
-
-    // Store the Window instance in the window handle user data.
-    SetInstance();
-    ShowWindow(m_hWnd, SW_SHOW);
+    
     return 0;
 }
 
@@ -83,66 +81,55 @@ void Window::Release()
     DestroyWindow(m_hWnd);
 }
 
-std::weak_ptr<Button> Window::CreateButton(ButtonDescriptor* buttonDescriptor, void(*onClickedCallback)())
+Button* Window::CreateButton(ButtonDescriptor* buttonDescriptor, void(*onClickedCallback)(Button* button))
 {
-    std::shared_ptr<Button> button = std::make_shared<Button>();
+    Button* button = new Button();
     button->Init(this, buttonDescriptor, onClickedCallback);
     m_buttons.insert(button);
-    return std::weak_ptr<Button>(button);
+    return button;
 }
 
-std::weak_ptr<TextInput> Window::CreateTextInput(TextInputDescriptor* textInputDescriptor, void(*onChangeCallback)())
+TextInput* Window::CreateTextInput(TextInputDescriptor* textInputDescriptor, void(*onChangeCallback)(TextInput* textInput))
 {
-    std::shared_ptr<TextInput> textInput = std::make_shared<TextInput>();
+    TextInput* textInput = new TextInput();
     textInput->Init(this, textInputDescriptor, onChangeCallback);
     m_textInputs.insert(textInput);
-    return std::weak_ptr<TextInput>(textInput);
+    return textInput;
 }
 
-std::weak_ptr<Image> Window::CreateImage(Bitmap* bitmap, ImageDescriptor* imageDescriptor)
+Image* Window::CreateImage(Bitmap* bitmap, ImageDescriptor* imageDescriptor)
 {
-    std::shared_ptr<Image> image = std::make_shared<Image>();
+    Image* image = new Image();
     image->Init(bitmap, imageDescriptor, GetDC(m_hWnd));
     m_graphicResources.insert(image);
-    return std::weak_ptr<Image>(image);
+    return image;
+}
+
+void Window::Redraw() {
+    RedrawWindow(GetWindowHandle(), NULL, NULL, RDW_INVALIDATE);
 }
 
 LRESULT CALLBACK Window::WindowProcess(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    Window* window = Window::GetInstance(hWnd);
+    Window& window = *Window::GetInstance(hWnd);
+    App& app = App::instance();
+    Window& window2 = *app.m_pMainWindow;
     switch (uMsg)
     {
-    case WM_COMMAND:
+    case WM_CREATE:
     {
-        const HWND& controlHWnd = reinterpret_cast<HWND>(lParam);
-        if (!controlHWnd) break;
-        switch(wParam) {
-        case EN_CHANGE:            
-            window->OnEditControlChanged(controlHWnd);
-            break;
-        case BN_CLICKED:
-            window->OnButtonClicked(controlHWnd);
-            break;
-        }
+        int a = 5;
+        //window = *app.m_pMainWindow;
+        window2.SetWindowHandle(hWnd);
+        window2.SetInstance();
+        window2.OnWindowMessageCreate();
         break;
     }
+    case WM_COMMAND:
+        window.OnWindowMessageCommand(wParam, lParam);
     break;
     case WM_PAINT:
-    {
-        OutputDebugString(L"WMPAIN called\n");
-        if (window->m_graphicResources.size() == 0) {
-            break;
-        }
-        OutputDebugString(L"Has Graphic Resources\n");
-        PAINTSTRUCT ps;
-        HDC compatibleDevice = BeginPaint(hWnd, &ps);
-        HDC sourceCompatibleDevice = CreateCompatibleDC(compatibleDevice);
-        for (const auto& graphicResource : window->m_graphicResources) {
-            graphicResource->Draw(compatibleDevice, sourceCompatibleDevice);
-        }
-        DeleteDC(sourceCompatibleDevice);
-        EndPaint(hWnd, &ps);
-    }
+        window.OnWindowMessagePaint();
     break;
     case WM_DESTROY:
         PostQuitMessage(0);
@@ -153,14 +140,46 @@ LRESULT CALLBACK Window::WindowProcess(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
     return 0;
 }
 
-void Window::OnButtonClicked(HWND buttonHWnd)
+void Window::OnWindowMessageCreate()
 {
-    const Button& button = *Button::GetInstance(buttonHWnd);
-    button.Execute();
+    SetInstance();
+    ShowWindow(m_hWnd, SW_SHOW);
+    if(m_onWindowCreateCallback) m_onWindowCreateCallback(this);
+    UpdateWindow(m_hWnd);
 }
 
-void Window::OnEditControlChanged(HWND controlHWnd)
+void Window::OnWindowMessageCommand(WPARAM wParam, LPARAM lParam)
 {
-    const TextInput& textInput = *TextInput::GetInstance(controlHWnd);
-    textInput.OnChange();
+    const HWND& controlHWnd = reinterpret_cast<HWND>(lParam);
+    if (!controlHWnd) return;
+    if (LOWORD(wParam) != MAIN_WINDOW_ID) return;
+    switch (HIWORD(wParam)) {
+    case EN_CHANGE:
+        TextInput* textInput = TextInput::GetInstance(controlHWnd);
+        if (m_textInputs.find(textInput) == m_textInputs.end()) return;
+        textInput->OnChange();
+        break;
+    }
+    switch (wParam) {
+    case BN_CLICKED:
+        Button& button = *Button::GetInstance(controlHWnd);
+        button.Execute();
+        break;
+    }
+    return;
+}
+
+void Window::OnWindowMessagePaint()
+{
+    if (m_graphicResources.size() == 0) {
+        return;
+    }
+    PAINTSTRUCT ps;
+    HDC compatibleDevice = BeginPaint(m_hWnd, &ps);
+    HDC sourceCompatibleDevice = CreateCompatibleDC(compatibleDevice);
+    for (const auto& graphicResource : m_graphicResources) {
+        graphicResource->Draw(compatibleDevice, sourceCompatibleDevice);
+    }
+    DeleteDC(sourceCompatibleDevice);
+    EndPaint(m_hWnd, &ps);
 }

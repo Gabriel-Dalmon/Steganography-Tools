@@ -8,7 +8,7 @@ Button::~Button()
 {
 }
 
-int Button::Init(const Window* parentWindow, ButtonDescriptor* buttonDescriptor, void (*onClickCallback)()) {
+int Button::Init(const Window* parentWindow, ButtonDescriptor* buttonDescriptor, void (*onClickCallback)(Button* button), int windowId) {
 	const HWND& parentHWnd = parentWindow->GetWindowHandle();
 	const HINSTANCE& parentHInstance = parentWindow->GetHInstance();
 	m_onClickCallback = onClickCallback;
@@ -21,7 +21,7 @@ int Button::Init(const Window* parentWindow, ButtonDescriptor* buttonDescriptor,
 		buttonDescriptor->width,
 		buttonDescriptor->height,
 		parentHWnd,
-		(HMENU)0,
+		(HMENU)windowId,
 		parentHInstance,
 		NULL
 	);

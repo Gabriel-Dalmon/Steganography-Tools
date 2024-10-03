@@ -12,10 +12,10 @@ class Button : public AbstractWindow<Button> {
 public:
 	Button();
 	~Button();
-	int Init(const Window* parentWindow, ButtonDescriptor* buttonDescriptor, void (*callback)());
+	int Init(const Window* parentWindow, ButtonDescriptor* buttonDescriptor, void (*callback)(Button* button), int windowId = MAIN_WINDOW_ID);
 
-	inline void Execute() const { if (m_onClickCallback)m_onClickCallback(); };
+	inline void Execute() { if (m_onClickCallback)m_onClickCallback(this); };
 
 private:
-	void (*m_onClickCallback)() = nullptr;
+	void (*m_onClickCallback)(Button* button) = nullptr;
 };

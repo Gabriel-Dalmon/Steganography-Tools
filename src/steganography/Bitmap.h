@@ -1,3 +1,5 @@
+#pragma once
+
 class Bitmap {
 	byte* m_buffer;
 	BITMAPFILEHEADER m_bfh;
@@ -9,6 +11,7 @@ public:
 	Bitmap();
 
 	bool Init(const char* path);
+	bool Init(const wchar_t* path);
 
 	BITMAPINFOHEADER GetMapInfo();
 

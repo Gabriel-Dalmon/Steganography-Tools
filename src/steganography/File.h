@@ -1,5 +1,5 @@
-#include "pch.h"
-#include <stdio.h>
+#pragma once
+
 class File {
 	const char* m_path;
 	long int m_size;
@@ -8,6 +8,7 @@ public:
 	File();
 
 	bool Open(const char* path, const char* openMode);
+	bool Open(const wchar_t* path, const wchar_t* openMode);
 
 	long int GetSize();
 
