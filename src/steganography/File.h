@@ -1,4 +1,5 @@
-#include "pch.h"
+#pragma once
+
 #include <stdio.h>
 class File {
 	const char* m_path;

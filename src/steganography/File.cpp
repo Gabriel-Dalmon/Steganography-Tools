@@ -10,6 +10,7 @@ File::File() {
 }
 
 bool File::Open(const char* path, const char* openMode) {
+	m_pFile = nullptr;
 	m_path = path;
 	fopen_s(&m_pFile, path, openMode);
 	if (m_pFile == nullptr) {

@@ -60,9 +60,9 @@ byte Bitmap::ReadBits(byte numofBits, byte* place) {
 }
 
 void Bitmap::SetBytes(unsigned int value, byte size, byte* place) {
+	int offset = 0;
 	for (int i = 0, j = 0; i < size * 6 ; i++) {
 		byte tempStorage = 0b00;
-		int offset = 0;
 		if (j==2) {
 			tempStorage = ((byte)(value >> (i + offset)));
 			SetBits(tempStorage, 2, place);
@@ -80,21 +80,21 @@ void Bitmap::SetBytes(unsigned int value, byte size, byte* place) {
 
 unsigned int Bitmap::ReadBytes(byte size, byte* place) {
 	unsigned int returnValue = 0b00;
+	int offset = 0;
 	for (int i = 0, j = 0; i < size * 6; i++) {
 		byte getBits = 0b00;
 		unsigned int tempStorage = 0b00;
-		int offset = 0;
+		
 		if (j == 2) {
-			offset++;
 			getBits = ReadBits(2, place);
-			tempStorage = (unsigned int)getBits << i + offset;
-			
+			tempStorage = (unsigned int)getBits << (i + offset);
+			offset++;
 			j = 0;
 			
 		}
 		else {
 			getBits = ReadBits(1, place);
-			tempStorage = (unsigned int)getBits << i + offset;
+			tempStorage = (unsigned int)getBits << (i + offset);
 			j++;
 		}
 		returnValue |= tempStorage;
@@ -114,14 +114,21 @@ void Bitmap::setTextHeader(unsigned int lengthOfText) {
 	
 }
 
-void Bitmap::EncryptText(const char* text) {
-	int size = 32603;
-	setTextHeader(size);
-	byte* place = m_colorBits + 24;
-	//for (int i = 0; i < size; i++) {
-	for (int i = 0; i < 10; i++) {
-		SetBytes((unsigned int)text[i], 2, place);
-		place += 6;
+bool Bitmap::EncryptText(const char* text) {
+	int size = std::strlen(text);
+	int bits = m_bfh.bfSize - m_bfh.bfOffBits - 24;
+	if (size < bits) {
+		setTextHeader(size);
+		byte* place = m_colorBits + 24;
+		for (int i = 0; i < size; i++) {
+			SetBytes((unsigned int)text[i], 2, place);
+			place += 6;
+		}
+		SetSignEncrypted();
+		return true;
+	}
+	else {
+		return false;
 	}
 }
 
@@ -141,15 +148,13 @@ unsigned int Bitmap::ReadTextHeader() {
 }
 
 const char* Bitmap::ReadEncryptedText(int textLength) {
-	//char* returnArray = new char[textLength+1];
-	char* returnArray = new char[11];
+	char* returnArray = new char[textLength+1];
 	byte* place = m_colorBits + 24;
-	//for (int i = 0; i < textLength; i++) {
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < textLength; i++) {
 		returnArray[i] = (char)ReadBytes(1, place);
 		place += 6;
 	}
-	//returnArray[textLength] = '\0';
-	returnArray[10] = '\0';
+	returnArray[textLength] = '\0';
 	return returnArray;
 }
+

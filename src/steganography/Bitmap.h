@@ -1,3 +1,4 @@
+#pragma once
 #define ENCRYPTSIGN 300
 
 class Bitmap {
@@ -32,7 +33,7 @@ public:
 
 	void setTextHeader(unsigned int lengthOfText);
 
-	void EncryptText(const char* text);
+	bool EncryptText(const char* text);
 
 	bool CheckSignEncrypted();
 
