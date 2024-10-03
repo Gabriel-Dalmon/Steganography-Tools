@@ -3,9 +3,14 @@
 App* App::instance_ = nullptr;
 
 App::App() {
-
+	m_pMainWindow = nullptr;
+	m_pOriginalBitmap = nullptr;
+	m_pOutputBitmap = nullptr;
+	m_pOriginalImage = nullptr;
+	m_pOutputImage = nullptr;
+	m_pFilePathTextInput = nullptr;
+	m_pEncryptionTextInput = nullptr;
 }
-
 App& App::instance()
 {
     if (!instance_) {
@@ -167,7 +172,7 @@ void App::LoadFile(TextInput* pTextInput)
 	orinalBitmap = Bitmap();
 	orinalBitmap.Init(filePath);
 	if (orinalBitmap.CheckSignEncrypted()) {
-		MessageBox(0, L"File is already encrypted.", 0, 0);
+		MessageBox(0, L"File is already encrypted. \n Click OK to decrypt it.", 0, 0);
 		int encryptedDataLength = orinalBitmap.ReadTextHeader();
 		const char* encryptedData = orinalBitmap.ReadEncryptedText(encryptedDataLength);
 		std::cout << encryptedData << std::endl;
