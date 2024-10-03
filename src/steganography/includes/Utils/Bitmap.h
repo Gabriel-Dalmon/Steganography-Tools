@@ -15,6 +15,8 @@ public:
 	bool Init(const char* path);
 	bool Init(const wchar_t* path);
 	bool Init(Bitmap& bitmap);
+	bool Save(const char* path);
+	void Release();
 
 	BITMAPINFOHEADER GetMapInfo();
 

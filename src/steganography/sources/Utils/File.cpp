@@ -42,6 +42,13 @@ void File::Read(byte* buffer) {
 	}
 }
 
+void File::ReadChunk(byte* buffer, int size)
+{
+	if (m_pFile != nullptr) {
+		fread(buffer, sizeof(char), size, m_pFile);
+	}
+}
+
 void File::Write(byte* buffer, int size) {
 	m_size = size;
 	if (m_pFile != nullptr) {

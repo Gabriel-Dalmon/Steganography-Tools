@@ -7,7 +7,7 @@
     "configuration": [
         {
             "additional_dependencies": "%(AdditionalDependencies)",
-            "additional_include_directories": "",
+            "additional_include_directories": "$(ProjectDir)\\..\\..\\..\\src\\$(ProjectName)\\includes",
             "additional_library_directories": "",
             "character_set": "Unicode",
             "conformance_mode": "true",
@@ -28,7 +28,7 @@
         },
         {
             "additional_dependencies": "%(AdditionalDependencies)",
-            "additional_include_directories": "",
+            "additional_include_directories": "$(ProjectDir)\\..\\..\\..\\src\\$(ProjectName)\\includes",
             "additional_library_directories": "",
             "character_set": "Unicode",
             "conformance_mode": "true",

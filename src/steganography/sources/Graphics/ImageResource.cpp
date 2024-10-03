@@ -1,6 +1,6 @@
 #include "pch.h"
 
-Image::Image()
+ImageResource::ImageResource()
 {
 	m_hGraphicResource = nullptr;
 	m_width = 0;
@@ -12,11 +12,11 @@ Image::Image()
 	m_isScaled = false;
 }
 
-Image::~Image()
+ImageResource::~ImageResource()
 {
 }
 
-int Image::Init(Bitmap* bitmap, ImageDescriptor* imageDescriptor, HDC compatibleDevice)
+int ImageResource::Init(Bitmap* bitmap, ImageResourceDescriptor* imageDescriptor, HDC compatibleDevice)
 {
 	const auto& bitmapInfoHeader = bitmap->GetMapInfo();
 	m_width = bitmapInfoHeader.biWidth;
@@ -48,12 +48,13 @@ int Image::Init(Bitmap* bitmap, ImageDescriptor* imageDescriptor, HDC compatible
 	return 0;
 }
 
-void Image::Release()
+void ImageResource::Release()
 {
 	DeleteObject(m_hGraphicResource);
+	m_hGraphicResource = nullptr;
 }
 
-void Image::Draw(HDC compatibleDevice, HDC sourceCompatibleDevice)
+void ImageResource::Draw(HDC compatibleDevice, HDC sourceCompatibleDevice)
 {
 	SelectObject(sourceCompatibleDevice, m_hGraphicResource);
 	if (m_isScaled) {
