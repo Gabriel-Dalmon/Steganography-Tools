@@ -10,7 +10,7 @@ App::App() {
 	m_pOutputBitmap = nullptr;
 	m_pOriginalImage = nullptr;
 	m_pOutputImage = nullptr;
-	m_pFilePathTextInput = nullptr;
+	m_pFilePathInput = nullptr;
 	m_pEncryptionTextInput = nullptr;
 }
 
@@ -56,7 +56,7 @@ void App::Release() {
 	//--------------------------------------------------------------------------
 	/** These window components are destroyed by the window Release(). */
 	m_pEncryptionTextInput = nullptr;
-	m_pFilePathTextInput = nullptr;
+	m_pFilePathInput = nullptr;
 
 	//--------------------------------------------------------------------------
 	/** Delete the singleton instance. */
@@ -118,10 +118,10 @@ void App::OnWindowCreateCallback(Window* pWindow)
 	pWindow->CreateComponent<Button>(&saveButtonDescriptor);
 
 	//--------------------------------------------------------------------------
-	TextInputDescriptor textInputDescriptor { L"Enter the file path here.", 10, 10, 300, 25, &App::LoadFile };
+	FileInputDescriptor filePathInputDescriptor{ L"Select a .bmp file.", 200, 100, 240, 25, 5, L".bmp", & App::OnFileSelected};
 	TextInputDescriptor encryptTextInputDescriptor { L"Enter encryption data here.", 10, 50, 300, 25, nullptr };
-	
-	app.m_pFilePathTextInput = pWindow->CreateComponent<TextInput>(&textInputDescriptor);
+
+	app.m_pFilePathInput = pWindow->CreateComponent<FileInput>(&filePathInputDescriptor);
 	app.m_pEncryptionTextInput = pWindow->CreateComponent<TextInput>(&encryptTextInputDescriptor);
 }
 
@@ -144,9 +144,21 @@ void App::Encrypt(Button* pButtonClicked)
 	Bitmap& outputBitmap = *app.m_pOutputBitmap;
 	outputBitmap.Init(*app.m_pOriginalBitmap);
 	const char* textToEncrypt = app.m_pEncryptionTextInput->GetText();
-	bool isEncrypted = outputBitmap.EncryptText(textToEncrypt);
+	size_t pixelBufferSize = outputBitmap.GetPixelsBufferSize();
+	int i = 0;
+	int MAX_RESIZE_COUNT = 10;
+	while (SteganographyHelper::IsTextFittingInBuffer(textToEncrypt, pixelBufferSize) == false && i < MAX_RESIZE_COUNT) {
+		std::cout << "Bitmap resized" << " | " << i;
+		//outputBitmap.DoubleSize();
+		i++;
+	}
+	int isEncrypted = SteganographyHelper::EncryptText(
+		textToEncrypt,
+		outputBitmap.GetPixelsBuffer(),
+		pixelBufferSize
+	);
 	delete textToEncrypt;
-	if(!isEncrypted) {
+	if(isEncrypted == 1) {
 		MessageBox(0, L"Failed to encrypt text.", 0, 0);
 		return;
 	}
@@ -177,16 +189,18 @@ void App::Decrypt(Button* pButtonClicked)
 {
 	App& app = App::instance();
 	Bitmap& originalBitmap = *app.m_pOriginalBitmap;
-	//check if originalBitmap is null
 	if(app.m_pOriginalBitmap == nullptr) {
 		MessageBox(0, L"A bitmap must be loaded to be decrypted.", 0, 0);
 		return;
 	}
-	if (originalBitmap.CheckSignEncrypted() == false) {
-		MessageBox(0, L"This bitmap has no data encrypted in its pixels.", 0, 0);
+	const char* encryptedData = SteganographyHelper::ReadEncryptedText(
+		originalBitmap.GetPixelsBuffer(), 
+		originalBitmap.GetPixelsBufferSize()
+	);
+	if(encryptedData == nullptr) {
+		MessageBox(0, L"No text to decrypt detected in this bitmap.", 0, 0);
 		return;
 	}
-	const char* encryptedData = originalBitmap.ReadEncryptedText();
 	app.m_pEncryptionTextInput->SetText(encryptedData);
 	delete encryptedData;
 }
@@ -201,11 +215,11 @@ void App::SaveOutput(Button* pButtonClicked)
 	}
 	const char* path = "output.bmp";
 	app.m_pOutputBitmap->Save(path);
-	MessageBox(0, L"File saved.", 0, 0);
+	MessageBox(0, L"File saved.", L"Information", 0);
 }
 
 //------------------------------------------------------------------------------
-void App::LoadFile(TextInput* pTextInput)
+void App::OnFileSelected(const wchar_t* filePath)
 {
 	App& app = App::instance();
 	Window& window = *app.m_pMainWindow;
@@ -222,12 +236,7 @@ void App::LoadFile(TextInput* pTextInput)
 	int imageY = buttonY - imageHeight - 50;
 	int centerPaddingHalf = 50;
 #pragma endregion ImagesDisplaySpecifications
-	wchar_t* filePath = pTextInput->GetWText();
-	if (!std::filesystem::exists(filePath) || std::filesystem::path(filePath).extension() != ".bmp") {
-		// File does not exist or is not a bitmap.	
-		delete filePath;
-		return;
-	}
+
 	if(app.m_pOriginalBitmap == nullptr) {
 		app.m_pOriginalBitmap = new Bitmap();
 	}
@@ -240,108 +249,23 @@ void App::LoadFile(TextInput* pTextInput)
 	originalBitmap = Bitmap();
 	originalBitmap.Init(filePath);
 	delete filePath;
-	if (originalBitmap.CheckSignEncrypted()) {
-		MessageBox(0, L"File is already encrypted.", 0, 0);
-		const char* encryptedData = originalBitmap.ReadEncryptedText();
+
+	const char* encryptedData = SteganographyHelper::ReadEncryptedText(
+		originalBitmap.GetPixelsBuffer(),
+		originalBitmap.GetPixelsBufferSize()
+	);
+	if (encryptedData != nullptr) {
+		std::cout << "Decrypted Text: " << encryptedData << "\n";
+		MessageBox(0, L"This file is already encrypted.", L"Information", 0);
 		app.m_pEncryptionTextInput->SetText(encryptedData);
 		delete encryptedData;
 	}
+
+
 	if(app.m_pOriginalImage != nullptr) {
 		app.m_pMainWindow->DeleteImage(app.m_pOriginalImage);
 	}
 	ImageResourceDescriptor imageDescriptor = { windowCenterX - (imageWidth + centerPaddingHalf), imageY, imageWidth, imageHeight };
 	app.m_pOriginalImage = window.CreateImage(&originalBitmap, &imageDescriptor);
 	window.Redraw();
-}
-
-void App::FileDialogTest(Button* button) {
-	App& app = App::instance();
-	Window& window = *app.m_pMainWindow;
-
-#pragma region ImagesDisplaySpecifications
-	int windowWidth = window.GetWindowWidth();
-	int windowHeight = window.GetWindowHeight();
-	int windowCenterX = windowWidth / 2;
-	int buttonHeight = 50;
-	int paddingBottom = windowHeight / 4;
-	int buttonY = windowHeight - buttonHeight - paddingBottom;
-	int imageWidth = 400;
-	int imageHeight = 400;
-	int imageY = buttonY - imageHeight - 50;
-	int centerPaddingHalf = 50;
-#pragma endregion ImagesDisplaySpecifications
-	// Initialize COM
-	HRESULT hr = CoInitialize(NULL);
-	if (FAILED(hr))
-	{
-		MessageBox(NULL, L"COM Initialization failed", L"Error", MB_OK);
-		return;
-	}
-
-	// Create the FileDialog
-	IFileDialog* pFileDialog = NULL;
-	hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pFileDialog));
-
-	if (SUCCEEDED(hr))
-	{
-		// Set the file type filter to .bmp files
-		COMDLG_FILTERSPEC fileTypes[] = {
-			{ L"Bitmap Images (*.bmp)", L"*.bmp" }
-		};
-		pFileDialog->SetFileTypes(ARRAYSIZE(fileTypes), fileTypes);
-
-		// Show the dialog
-		hr = pFileDialog->Show(NULL);
-		if (SUCCEEDED(hr))
-		{
-			// Get the result
-			IShellItem* pItem;
-			hr = pFileDialog->GetResult(&pItem);
-			if (SUCCEEDED(hr))
-			{
-				// Get the file path
-				LPWSTR filePath;
-				hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &filePath);
-				if (SUCCEEDED(hr))
-				{
-					// Use filePath to load your .bmp file
-					if (app.m_pOriginalBitmap == nullptr) {
-						app.m_pOriginalBitmap = new Bitmap();
-					}
-					else {
-						app.m_pOriginalBitmap->Release();
-						delete app.m_pOriginalBitmap;
-						app.m_pOriginalBitmap = new Bitmap();
-					}
-					Bitmap& originalBitmap = *app.m_pOriginalBitmap;
-					originalBitmap = Bitmap();
-					originalBitmap.Init(filePath);
-					app.m_pFilePathTextInput->SetText(filePath);
-					CoTaskMemFree(filePath); // Free the memory allocated for the file path
-					if (originalBitmap.CheckSignEncrypted()) {
-						MessageBox(0, L"File is already encrypted.", 0, 0);
-						const char* encryptedData = originalBitmap.ReadEncryptedText();
-						app.m_pEncryptionTextInput->SetText(encryptedData);
-						delete encryptedData;
-					}
-					if (app.m_pOriginalImage != nullptr) {
-						app.m_pMainWindow->DeleteImage(app.m_pOriginalImage);
-					}
-					ImageResourceDescriptor imageDescriptor = { windowCenterX - (imageWidth + centerPaddingHalf), imageY, imageWidth, imageHeight };
-					app.m_pOriginalImage = window.CreateImage(&originalBitmap, &imageDescriptor);
-					window.Redraw();
-					
-				}
-				pItem->Release(); // Release the IShellItem
-			}
-		}
-		pFileDialog->Release(); // Release the IFileDialog
-	}
-	else
-	{
-		MessageBox(NULL, L"Failed to create FileDialog", L"Error", MB_OK);
-	}
-
-	// Uninitialize COM
-	CoUninitialize();
 }

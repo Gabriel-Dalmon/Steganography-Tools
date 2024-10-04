@@ -19,6 +19,11 @@ struct GetComponentDescriptorType<TextInput> {
 };
 
 template <>
+struct GetComponentDescriptorType<FileInput> {
+	using type = FileInputDescriptor;
+};
+
+template <>
 struct GetComponentDescriptorType<Window> {
 	using type = WindowClassDescriptor;
 };

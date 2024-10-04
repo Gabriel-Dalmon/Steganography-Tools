@@ -50,12 +50,12 @@ void TextInput::Release()
 //------------------------------------------------------------------------------
 char* TextInput::GetText() const
 {
-	size_t textLength = GetWindowTextLength(m_hWnd);
+	size_t textLength = GetWindowTextLength(m_hWnd) + 1;
 	wchar_t* wtext = new wchar_t[textLength];
 	GetWindowText(m_hWnd, wtext, textLength);
 	size_t outSize;
 	char* text = new char[textLength];
-	wcstombs_s(&outSize, text, textLength, wtext, textLength-1);
+	wcstombs_s(&outSize, text, textLength, wtext, textLength);
 	delete[] wtext;
 	return text;
 }
@@ -74,14 +74,14 @@ void TextInput::SetText(const char* text)
 {
 	size_t outSize;
 	size_t textLength = std::strlen(text);
-	wchar_t* wtext = new wchar_t[textLength];
-	mbstowcs_s(&outSize, wtext, textLength, text, textLength-1);
+	wchar_t* wtext = new wchar_t[textLength+1];
+	mbstowcs_s(&outSize, wtext, textLength+1, text, textLength);
 	SetWindowText(m_hWnd, wtext);
 	delete[] wtext;
 }
 
 //------------------------------------------------------------------------------
-void TextInput::SetText(wchar_t* text)
+void TextInput::SetText(const wchar_t* text)
 {
 	SetWindowText(m_hWnd, text);
 }

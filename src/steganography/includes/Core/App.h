@@ -12,14 +12,14 @@ public:
 	static void Encrypt(Button* pButtonClicked);
 	static void Decrypt(Button* pButtonClicked);
 	static void SaveOutput(Button* pButtonClicked);
-	static void LoadFile(TextInput* pTextInput);
-	static void FileDialogTest(Button* button);
+	static void OnFileSelected(const wchar_t* filePath);
+
 	Window* m_pMainWindow;
+	FileInput* m_pFilePathInput;
 private:
 	App();
 	static App* instance_;
 
-	TextInput* m_pFilePathTextInput;
 	TextInput* m_pEncryptionTextInput;
 
 	Bitmap* m_pOriginalBitmap;

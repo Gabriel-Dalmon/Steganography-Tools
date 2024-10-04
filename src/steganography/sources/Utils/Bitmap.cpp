@@ -84,55 +84,6 @@ byte* Bitmap::GetBuffer() {
 	return m_buffer;
 }
 
-
-bool Bitmap::EncryptText(const char* text) {
-	unsigned int size = std::strlen(text);
-	if (size <= MAX16BITS) {
-		int bits = m_bfh.bfSize - m_bfh.bfOffBits - 24;
-		while (size * 6 > bits) {
-			DoubleSize();
-			bits = m_bfh.bfSize - m_bfh.bfOffBits - 24;
-		}
-
-		BitwiseOperationsHelper::SetBytes(size, 2, m_colorBits + 12);
-		byte* place = m_colorBits + 24;
-		for (int i = 0; i < size; i++) {
-			BitwiseOperationsHelper::SetBytes((unsigned int)text[i], 2, place);
-			place += 6;
-		}
-		place = m_colorBits;
-		BitwiseOperationsHelper::SetSignEncrypted(place);
-		return true;
-	}
-	else {
-		return false;
-	}
-}
-
-bool Bitmap::CheckSignEncrypted() {
-	unsigned int sign = ENCRYPTSIGN;
-	unsigned int sign2 = (unsigned int)BitwiseOperationsHelper::ReadBytes(2, m_colorBits);
-	if (sign2 == sign) {
-		return true;
-	}
-	return false;
-}
-
-const char* Bitmap::ReadEncryptedText() {
-	if (CheckSignEncrypted()) {
-		unsigned int textLength = BitwiseOperationsHelper::ReadBytes(2, m_colorBits + 12);
-		char* returnArray = new char[textLength + 1];
-		byte* place = m_colorBits + 24;
-		for (int i = 0; i < textLength; i++) {
-			returnArray[i] = (char)BitwiseOperationsHelper::ReadBytes(1, place);
-			place += 6;
-		}
-		returnArray[textLength] = '\0';
-		return returnArray;
-	}
-	return nullptr;
-}
-
 void Bitmap::DoubleSize() {
 	BITMAPINFOHEADER newBIH = m_bih;
 	BITMAPFILEHEADER newBFH = m_bfh;

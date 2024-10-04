@@ -12,7 +12,7 @@ struct TextInputDescriptor : public ComponentDescriptor {
 		height(height),
 		onChangeCallback(onChangeCallback)
 	{};
-	const wchar_t* defaultText = L"TextInput";
+	const wchar_t* defaultText = L"FileInput";
 	int x = 0;
 	int y = 0;
 	int width = 100;
@@ -32,7 +32,7 @@ public:
 	char* GetText() const;
 	wchar_t* GetWText() const;
 	void SetText(const char* text);
-	void SetText(wchar_t* text);
+	void SetText(const wchar_t* text);
 	inline void OnChange() { if (m_onChangeCallback)m_onChangeCallback(this); };
 
 private:

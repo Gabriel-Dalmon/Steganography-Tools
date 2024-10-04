@@ -26,7 +26,7 @@ int Button::Init(const Window* parentWindow, ButtonDescriptor* buttonDescriptor,
 	m_hWnd = CreateWindow(
 		L"BUTTON",
 		m_text,
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_OWNERDRAW,
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | WS_BORDER | BS_DEFPUSHBUTTON | BS_OWNERDRAW,
 		buttonDescriptor->x,
 		buttonDescriptor->y,
 		buttonDescriptor->width,

@@ -14,6 +14,4 @@ public:
 	static byte ReadBits(byte numOfBits, byte* place);
 
 	static unsigned int ReadBytes(byte size, byte* place);
-
-
 };

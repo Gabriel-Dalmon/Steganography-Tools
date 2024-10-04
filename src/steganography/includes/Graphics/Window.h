@@ -37,11 +37,13 @@ public:
 
 	// Interface Factories
 	template<typename ComponentType>
-	ComponentType* CreateComponent(ComponentDescriptor* pComponentDescriptor) {
-		static_assert(std::is_base_of<CRTPComponent<ComponentType>, ComponentType>::value, "ComponentType must inherit from Component");
+	ComponentType* CreateComponent(ComponentDescriptor* pComponentDescriptor, bool keepOwnership = true) {
+		static_assert(std::is_base_of<CRTPComponent<ComponentType>, ComponentType>::value, "ComponentType must inherit from CRTPComponent<ComponentType>");
 		ComponentType* component = new ComponentType();
 		component->Init(this, static_cast<GetComponentDescriptorType<ComponentType>::type*>(pComponentDescriptor));
-		m_components.insert(component);
+		if (keepOwnership) {
+			m_components.insert(component);
+		}
 		return component;
 	};
 	ImageResource* CreateImage(Bitmap* bitmap, ImageResourceDescriptor* imageDescriptor);

@@ -28,13 +28,8 @@ public:
 
 	void DoubleSize();
 
-	bool EncryptText(const char* text);
-
-	const char* ReadEncryptedText();
-
-	bool CheckSignEncrypted();
-
 	inline byte* GetPixelsBuffer() { return m_colorBits; };
+	inline size_t GetPixelsBufferSize() { return m_bfh.bfSize - m_bfh.bfOffBits - 24; };
 
 	void uninit();
 

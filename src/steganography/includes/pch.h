@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <shobjidl_core.h>
+#include <cwchar>
 
 #ifdef _DEBUG
 #include <crtdbg.h>
@@ -32,6 +33,8 @@ template<typename ComponentType>
 struct GetComponentDescriptorType;
 struct TextInputDescriptor;
 class TextInput;
+struct FileInputDescriptor;
+class FileInput;
 struct ButtonDescriptor;
 class Button;
 class GraphicResource;
@@ -45,7 +48,7 @@ class App;
 #define RELEASE(p) {if (p){ p->Release(); p = nullptr;}}
 
 
-#include "Core/App.h"
+#include "Core.h"
 #include "Graphics.h"
 #include "Utils.h"
 #include "Steganography.h"
