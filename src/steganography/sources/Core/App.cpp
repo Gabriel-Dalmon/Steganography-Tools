@@ -75,17 +75,17 @@ void App::OnWindowCreateCallback(Window* pWindow)
 	int windowCenterY = windowHeight / 2;
 	int buttonWidth = 200;
 	int buttonHeight = 50;
-	int paddingBottom = windowHeight / 4;
+	int paddingBottom = windowHeight / 5;
 	int buttonY = windowHeight - buttonHeight - paddingBottom;
 	int imageWidth = 400;
 	int imageHeight = 400;
 	int imageY = buttonY - imageHeight - 50;
-	int centerPaddingHalf = 50;
+	int centerPadding = 50;
 
 	//--------------------------------------------------------------------------
 	ButtonDescriptor encryptButtonDescriptor { 
 		L"Encrypt", 
-		windowCenterX - (buttonWidth + centerPaddingHalf), 
+		windowCenterX - buttonWidth / 2 - centerPadding - buttonWidth,
 		buttonY, 
 		buttonWidth, 
 		buttonHeight, 
@@ -95,7 +95,7 @@ void App::OnWindowCreateCallback(Window* pWindow)
 	};
 	ButtonDescriptor decryptButtonDescriptor { 
 		L"Decrypt", 
-		windowCenterX + centerPaddingHalf, 
+		windowCenterX - buttonWidth/2,
 		buttonY, 
 		buttonWidth, 
 		buttonHeight,
@@ -105,7 +105,7 @@ void App::OnWindowCreateCallback(Window* pWindow)
 	};
 	ButtonDescriptor saveButtonDescriptor{
 		L"Save",
-		windowCenterX + centerPaddingHalf + buttonWidth + centerPaddingHalf * 2,
+		windowCenterX + buttonWidth / 2 + centerPadding,
 		buttonY,
 		buttonWidth,
 		buttonHeight,
@@ -118,8 +118,15 @@ void App::OnWindowCreateCallback(Window* pWindow)
 	pWindow->CreateComponent<Button>(&saveButtonDescriptor);
 
 	//--------------------------------------------------------------------------
-	FileInputDescriptor filePathInputDescriptor{ L"Select a .bmp file.", 200, 100, 240, 25, 5, L".bmp", & App::OnFileSelected};
-	TextInputDescriptor encryptTextInputDescriptor { L"Enter encryption data here.", 10, 50, 300, 25, nullptr };
+	FileInputDescriptor filePathInputDescriptor{ L"Select a .bmp file.", 200, 70, 240, 25, 5, L".bmp", & App::OnFileSelected};
+	TextInputDescriptor encryptTextInputDescriptor { 
+		L"Enter encryption data here.", 
+		windowCenterX - (imageWidth + centerPadding),
+		imageY + imageHeight - 15,
+		imageWidth, 
+		50, 
+		nullptr 
+	};
 
 	app.m_pFilePathInput = pWindow->CreateComponent<FileInput>(&filePathInputDescriptor);
 	app.m_pEncryptionTextInput = pWindow->CreateComponent<TextInput>(&encryptTextInputDescriptor);
