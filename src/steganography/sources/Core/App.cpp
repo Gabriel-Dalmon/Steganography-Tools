@@ -144,18 +144,21 @@ void App::Encrypt(Button* pButtonClicked)
 	Bitmap& outputBitmap = *app.m_pOutputBitmap;
 	outputBitmap.Init(*app.m_pOriginalBitmap);
 	const char* textToEncrypt = app.m_pEncryptionTextInput->GetText();
-	size_t pixelBufferSize = outputBitmap.GetPixelsBufferSize();
 	int i = 0;
 	int MAX_RESIZE_COUNT = 10;
-	while (SteganographyHelper::IsTextFittingInBuffer(textToEncrypt, pixelBufferSize) == false && i < MAX_RESIZE_COUNT) {
+	while (SteganographyHelper::IsTextFittingInBuffer(textToEncrypt, outputBitmap.GetPixelsBufferSize()) == false && i < MAX_RESIZE_COUNT) {
 		std::cout << "Bitmap resized" << " | " << i;
-		//outputBitmap.DoubleSize();
+		outputBitmap.DoubleSize();
 		i++;
+	}
+	if (SteganographyHelper::IsTextFittingInBuffer(textToEncrypt, outputBitmap.GetPixelsBufferSize() == false)) {
+		MessageBox(0, L"Text is too large to fit in the bitmap.", 0, 0);
+		return;
 	}
 	int isEncrypted = SteganographyHelper::EncryptText(
 		textToEncrypt,
 		outputBitmap.GetPixelsBuffer(),
-		pixelBufferSize
+		outputBitmap.GetPixelsBufferSize()
 	);
 	delete textToEncrypt;
 	if(isEncrypted == 1) {
