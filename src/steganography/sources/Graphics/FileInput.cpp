@@ -140,15 +140,16 @@ void FileInput::OnFileDialogButtonClicked(Button* pButton)
 		{ filter, extension } // { L"Authorized files *.bmp", "*.bmp" }
 	};
 	pFileDialog->SetFileTypes(ARRAYSIZE(fileTypes), fileTypes);
-	delete extension;
-	delete filter;
+	delete[] extension;
+	delete[] filter;
 
 	hr = pFileDialog->Show(NULL);
 	if (!SUCCEEDED(hr)) {
+		if (hr == HRESULT_FROM_WIN32(ERROR_CANCELLED)) return;
 		MessageBox(NULL, L"Failed to show FileDialog", L"Error", MB_OK);
 		return;
 	}
-			// Get the result
+	
 	IShellItem* pItem;
 	hr = pFileDialog->GetResult(&pItem);
 	if (!SUCCEEDED(hr))
@@ -157,7 +158,6 @@ void FileInput::OnFileDialogButtonClicked(Button* pButton)
 		return;
 	}
 	
-	// Get the file path
 	LPWSTR coFilePath;
 	hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &coFilePath);
 	if (!SUCCEEDED(hr))
