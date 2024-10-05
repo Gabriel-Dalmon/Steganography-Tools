@@ -1,5 +1,15 @@
 #pragma once
 
+// External includes
+#include <windows.h>
+#include <cwchar>
+#include <filesystem>
+#include <unordered_set>
+
+// Macros
+#define MAIN_WINDOW_ID 106
+
+// Forward declarations
 template<typename WindowType>
 class CRTPComponent;
 class Component;
@@ -19,6 +29,7 @@ class GraphicResource;
 struct ImageResourceDescriptor;
 class ImageResource;
 
+// Includes
 #include "Graphics/Component.h"
 #include "Graphics/ComponentDescriptorMap.h"
 
