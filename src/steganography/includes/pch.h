@@ -22,33 +22,15 @@
 #endif
 
 // Forward declarations
-template<typename WindowType>
-class CRTPComponent;
-class Component;
-struct WindowDescriptor;
-struct WindowClassDescriptor;
-class Window;
-struct ComponentDescriptor;
-template<typename ComponentType>
-struct GetComponentDescriptorType;
-struct TextInputDescriptor;
-class TextInput;
-struct FileInputDescriptor;
-class FileInput;
-struct ButtonDescriptor;
-class Button;
-class GraphicResource;
-struct ImageResourceDescriptor;
-class ImageResource;
-class Bitmap;
-class File;
-class App;
+
+
+
 
 #define MAIN_WINDOW_ID 106
 #define RELEASE(p) {if (p){ p->Release(); p = nullptr;}}
 
 
-#include "Core.h"
-#include "Graphics.h"
 #include "Utils.h"
+#include "Graphics.h"
 #include "Steganography.h"
+#include "Core.h"
